@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
-import net.openan.a2at.sdk.negotiation.runtime.impl.NegotiationRuntime;
+
 import net.openan.a2at.sdk.negotiation.store.impl.InMemoryNegotiationStore;
 import net.openan.a2at.sdk.negotiation.handler.ClarificationNegotiation;
 import net.openan.a2at.sdk.negotiation.types.model.NegotiationContext;

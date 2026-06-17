@@ -2,6 +2,7 @@ package net.openan.a2at.sdk.negotiation.runtime;
 
 import java.util.Map;
 import net.openan.a2at.sdk.negotiation.types.model.NegotiationContext;
+import net.openan.a2at.sdk.negotiation.types.model.NegotiationRole;
 import net.openan.a2at.sdk.negotiation.types.model.NegotiationStatus;
 import net.openan.a2at.sdk.negotiation.types.model.NegotiationType;
 
@@ -12,7 +13,7 @@ import net.openan.a2at.sdk.negotiation.types.model.NegotiationType;
  */
 public final class RoleBoundNegotiationOrchestrator {
 
-    private final NegotiationHandlerFacade handler;
+    private final NegotiationHandler handler;
 
     private final NegotiationRole role;
 
@@ -22,7 +23,7 @@ public final class RoleBoundNegotiationOrchestrator {
      * @param handler shared negotiation handler facade
      * @param role local role that this orchestrator represents
      */
-    public RoleBoundNegotiationOrchestrator(NegotiationHandlerFacade handler, NegotiationRole role) {
+    public RoleBoundNegotiationOrchestrator(NegotiationHandler handler, NegotiationRole role) {
         this.handler = handler;
         this.role = role;
     }

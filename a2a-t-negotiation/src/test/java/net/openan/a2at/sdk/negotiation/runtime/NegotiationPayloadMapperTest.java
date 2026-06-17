@@ -3,7 +3,7 @@ package net.openan.a2at.sdk.negotiation.runtime;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Map;
-import net.openan.a2at.sdk.negotiation.runtime.impl.NegotiationPayloadMapper;
+import net.openan.a2at.sdk.negotiation.runtime.helper.NegotiationPayloadMapper;
 import net.openan.a2at.sdk.negotiation.types.model.NegotiationContext;
 import net.openan.a2at.sdk.negotiation.types.model.NegotiationStatus;
 import net.openan.a2at.sdk.negotiation.types.model.NegotiationType;

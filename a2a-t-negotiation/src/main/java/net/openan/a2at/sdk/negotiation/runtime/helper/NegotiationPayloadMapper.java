@@ -1,4 +1,4 @@
-package net.openan.a2at.sdk.negotiation.runtime.impl;
+package net.openan.a2at.sdk.negotiation.runtime.helper;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

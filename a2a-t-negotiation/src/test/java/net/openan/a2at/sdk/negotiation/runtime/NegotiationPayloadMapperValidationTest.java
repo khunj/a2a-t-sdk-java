@@ -3,7 +3,7 @@ package net.openan.a2at.sdk.negotiation.runtime;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Map;
-import net.openan.a2at.sdk.negotiation.runtime.impl.NegotiationPayloadMapper;
+import net.openan.a2at.sdk.negotiation.runtime.helper.NegotiationPayloadMapper;
 import net.openan.a2at.sdk.negotiation.types.exception.NegotiationStateException;
 import org.junit.jupiter.api.Test;
 

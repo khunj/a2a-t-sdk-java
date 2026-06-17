@@ -5,23 +5,17 @@ import java.util.Map;
 import java.util.UUID;
 
 import net.openan.a2at.sdk.negotiation.handler.Negotiation;
-import net.openan.a2at.sdk.negotiation.runtime.impl.NegotiationPayloadMapper;
-import net.openan.a2at.sdk.negotiation.runtime.impl.NegotiationRuntime;
+import net.openan.a2at.sdk.negotiation.runtime.helper.NegotiationPayloadMapper;
 import net.openan.a2at.sdk.negotiation.store.NegotiationStore;
 import net.openan.a2at.sdk.negotiation.types.exception.NegotiationStateException;
-import net.openan.a2at.sdk.negotiation.handler.ClarificationNegotiation;
-import net.openan.a2at.sdk.negotiation.types.model.NegotiationContext;
-import net.openan.a2at.sdk.negotiation.types.model.NegotiationReceiveResult;
-import net.openan.a2at.sdk.negotiation.types.model.NegotiationRecord;
-import net.openan.a2at.sdk.negotiation.types.model.NegotiationStatus;
-import net.openan.a2at.sdk.negotiation.types.model.NegotiationType;
+import net.openan.a2at.sdk.negotiation.types.model.*;
 
 /**
  * Minimal negotiation handler that exposes fixed-key payload maps.
  *
  * @since 2026-06
  */
-public final class NegotiationHandler implements NegotiationHandlerFacade {
+public final class NegotiationHandler {
 
     public static final String NEGOTIATION_CONTEXT_KEY =
             "https://github.com/a2aproject/telecommunication/extensions/DATA-NEGOTIATION-T/v1";
@@ -32,16 +26,6 @@ public final class NegotiationHandler implements NegotiationHandlerFacade {
     private final NegotiationRuntime runtime;
 
     private final NegotiationStore store;
-
-    /**
-     * Creates a handler with only clarification negotiation support.
-     *
-     * @param negotiationType clarification negotiation handler
-     * @param store negotiation persistence store
-     */
-    public NegotiationHandler(ClarificationNegotiation negotiationType, NegotiationStore store) {
-        this(Map.of(NegotiationType.CLARIFICATION, negotiationType), store);
-    }
 
     /**
      * Creates a handler backed by explicit negotiation type registrations.
@@ -75,7 +59,6 @@ public final class NegotiationHandler implements NegotiationHandlerFacade {
         return start(NegotiationRole.CLIENT, type, contentText, facts);
     }
 
-    @Override
     public Map<String, Object> start(
             NegotiationRole role, NegotiationType type, String contentText, Map<String, Object> facts) {
         String negotiationId = UUID.randomUUID().toString();
@@ -84,7 +67,6 @@ public final class NegotiationHandler implements NegotiationHandlerFacade {
         return NegotiationPayloadMapper.payload(context, contentText, facts);
     }
 
-    @Override
     public Map<String, Object> receive(String message, Map<String, Object> contextMap) {
         NegotiationContext context = NegotiationPayloadMapper.contextFromMap(contextMap);
         NegotiationReceiveResult result = runtime.receive(message, context);
@@ -115,7 +97,6 @@ public final class NegotiationHandler implements NegotiationHandlerFacade {
         return NegotiationPayloadMapper.payload(nextContext, contentText, Map.of());
     }
 
-    @Override
     public Map<String, Object> continueNegotiation(
             NegotiationContext context, NegotiationStatus status, String contentText) {
         return continueMessage(context, status, contentText);

@@ -1,4 +1,4 @@
-package net.openan.a2at.sdk.negotiation.runtime;
+package net.openan.a2at.sdk.negotiation.types.model;
 
 /**
  * Local negotiation role bound to a facade.

@@ -18,7 +18,7 @@ class NegotiationHandlerTest {
     @Test
     void startReturnsFixedKeyMapAndSavesRecord() {
         InMemoryNegotiationStore store = new InMemoryNegotiationStore();
-        NegotiationHandler handler = new NegotiationHandler(new ClarificationNegotiation(), store);
+        NegotiationHandler handler = new NegotiationHandler(Map.of(NegotiationType.CLARIFICATION, new ClarificationNegotiation()), store);
 
         Map<String, Object> payload = handler.start(
                 NegotiationType.CLARIFICATION,
@@ -34,7 +34,7 @@ class NegotiationHandlerTest {
     @Test
     void continueMessageReturnsPayloadWithIncrementedRound() {
         InMemoryNegotiationStore store = new InMemoryNegotiationStore();
-        NegotiationHandler handler = new NegotiationHandler(new ClarificationNegotiation(), store);
+        NegotiationHandler handler = new NegotiationHandler(Map.of(NegotiationType.CLARIFICATION, new ClarificationNegotiation()), store);
         Map<String, Object> startPayload =
                 handler.start(NegotiationType.CLARIFICATION, "Please clarify the request.", Map.of());
         Map<String, Object> contextMap = cast(startPayload.get(NegotiationHandler.NEGOTIATION_CONTEXT_KEY));
@@ -55,7 +55,7 @@ class NegotiationHandlerTest {
     @Test
     void receiveReturnsNegotiationPayloadMap() {
         InMemoryNegotiationStore store = new InMemoryNegotiationStore();
-        NegotiationHandler handler = new NegotiationHandler(new ClarificationNegotiation(), store);
+        NegotiationHandler handler = new NegotiationHandler(Map.of(NegotiationType.CLARIFICATION, new ClarificationNegotiation()), store);
         Map<String, Object> startPayload = handler.start(NegotiationType.CLARIFICATION, "Please clarify", Map.of());
         Map<String, Object> context = cast(startPayload.get(NegotiationHandler.NEGOTIATION_CONTEXT_KEY));
 

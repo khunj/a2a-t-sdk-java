@@ -11,6 +11,8 @@ import net.openan.a2at.sdk.negotiation.types.model.NegotiationStatus;
 import net.openan.a2at.sdk.negotiation.types.model.NegotiationType;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
 class NegotiationHandlerStateTest {
 
     @Test
@@ -20,7 +22,7 @@ class NegotiationHandlerStateTest {
                 new NegotiationContext(
                         NegotiationType.CLARIFICATION, "neg-continue-mismatch", 2, NegotiationStatus.IN_PROGRESS),
                 "old"));
-        NegotiationHandler handler = new NegotiationHandler(new ClarificationNegotiation(), store);
+        NegotiationHandler handler = new NegotiationHandler(Map.of(NegotiationType.CLARIFICATION, new ClarificationNegotiation()), store);
 
         assertThrows(
                 NegotiationStateException.class,

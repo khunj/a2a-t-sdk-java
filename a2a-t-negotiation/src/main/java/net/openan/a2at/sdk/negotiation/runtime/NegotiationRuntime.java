@@ -1,4 +1,4 @@
-package net.openan.a2at.sdk.negotiation.runtime.impl;
+package net.openan.a2at.sdk.negotiation.runtime;
 
 import java.util.Map;
 import net.openan.a2at.sdk.negotiation.store.NegotiationStore;
