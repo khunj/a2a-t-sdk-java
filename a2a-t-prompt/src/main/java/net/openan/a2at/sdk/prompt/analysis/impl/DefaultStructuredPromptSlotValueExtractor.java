@@ -2,6 +2,11 @@ package net.openan.a2at.sdk.prompt.analysis.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import net.openan.a2at.sdk.core.exception.SdkException;
 import net.openan.a2at.sdk.core.model.PromptMessage;
 import net.openan.a2at.sdk.llm.LLMClient;
@@ -11,12 +16,6 @@ import net.openan.a2at.sdk.prompt.analysis.model.StructuredSlotValidationError;
 import net.openan.a2at.sdk.prompt.resources.loader.PromptSlotSchemaLoader;
 import net.openan.a2at.sdk.prompt.resources.model.PromptSlotDefinition;
 import net.openan.a2at.sdk.prompt.resources.model.PromptSlotSchema;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Shared LLM-backed structured slot extractor.
@@ -36,10 +35,7 @@ public final class DefaultStructuredPromptSlotValueExtractor implements PromptSl
     private final String userPrompt;
 
     public DefaultStructuredPromptSlotValueExtractor(
-            LLMClient llmClient,
-            PromptSlotSchemaLoader slotSchemaLoader,
-            String systemPrompt,
-            String userPrompt) {
+            LLMClient llmClient, PromptSlotSchemaLoader slotSchemaLoader, String systemPrompt, String userPrompt) {
         this.llmClient = llmClient;
         this.slotSchemaLoader = slotSchemaLoader;
         this.systemPrompt = systemPrompt;
@@ -92,7 +88,8 @@ public final class DefaultStructuredPromptSlotValueExtractor implements PromptSl
 
     private static Map<String, Object> parseObject(String payload) {
         try {
-            Map<String, Object> response = OBJECT_MAPPER.readValue(payload, new TypeReference<Map<String, Object>>() {});
+            Map<String, Object> response =
+                    OBJECT_MAPPER.readValue(payload, new TypeReference<Map<String, Object>>() {});
             return response == null ? Map.of() : response;
         } catch (Exception error) {
             throw new SdkException("Structured LLM payload must be a JSON object.", error);
@@ -119,9 +116,7 @@ public final class DefaultStructuredPromptSlotValueExtractor implements PromptSl
             }
             Map<String, Object> fields = normalizeMap(errorMap);
             normalized.add(new StructuredSlotValidationError(
-                    asString(fields.get("slot_name")),
-                    asString(fields.get("code")),
-                    asString(fields.get("message"))));
+                    asString(fields.get("slot_name")), asString(fields.get("code")), asString(fields.get("message"))));
         }
         return normalized;
     }

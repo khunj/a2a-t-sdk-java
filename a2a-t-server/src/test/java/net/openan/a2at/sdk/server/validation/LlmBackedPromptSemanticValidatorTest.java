@@ -6,26 +6,30 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import net.openan.a2at.sdk.llm.LLMClient;
 import net.openan.a2at.sdk.llm.adapter.LLMAdapter;
 import net.openan.a2at.sdk.llm.model.LLMResponse;
 import net.openan.a2at.sdk.llm.model.LlmUsage;
 import net.openan.a2at.sdk.llm.model.StructuredGenerationRequest;
-import net.openan.a2at.sdk.prompt.resources.loader.PromptSlotJsonSchemaLoader;
+import net.openan.a2at.sdk.prompt.resources.loader.PromptSlotSchemaLoader;
+import net.openan.a2at.sdk.prompt.resources.model.PromptSlotDefinition;
+import net.openan.a2at.sdk.prompt.resources.model.PromptSlotSchema;
 import net.openan.a2at.sdk.server.exception.PromptComplianceCheckException;
 import net.openan.a2at.sdk.server.model.ProcessedPromptMetadata;
 import org.junit.jupiter.api.Test;
 
 class LlmBackedPromptSemanticValidatorTest {
 
+    private static final PromptSlotSchemaLoader SLOT_SCHEMA_LOADER = (scenarioCode, language) -> new PromptSlotSchema(
+            scenarioCode, List.of(new PromptSlotDefinition("通知主题", true, "string", null, null, null, null, null)));
+
     @Test
-    void validatePassesWhenSemanticValidatorApprovesSlots() throws IOException {
+    void validatePassesWhenSemanticValidatorApprovesSlots() throws Exception {
         LLMClient llmClient = buildClient("{\"passed\":true,\"errors\":[]}");
-        PromptSlotJsonSchemaLoader slotJsonSchemaLoader =
-                (scenarioCode, language) -> Map.of("required", java.util.List.of("通知主题"));
-        LlmBackedPromptSemanticValidator validator = new LlmBackedPromptSemanticValidator(
-                llmClient, slotJsonSchemaLoader, "semantic system", "semantic user");
+        LlmBackedPromptSemanticValidator validator =
+                new LlmBackedPromptSemanticValidator(llmClient, SLOT_SCHEMA_LOADER, "semantic system", "semantic user");
 
         assertDoesNotThrow(() -> validator.validate(
                 "## 通知主题\nIncident\n",
@@ -34,7 +38,7 @@ class LlmBackedPromptSemanticValidatorTest {
     }
 
     @Test
-    void validatePassesWhenSemanticValidatorReturnsFormattedJson() throws IOException {
+    void validatePassesWhenSemanticValidatorReturnsFormattedJson() throws Exception {
         LLMClient llmClient = buildClient(
                 """
                 {
@@ -42,10 +46,8 @@ class LlmBackedPromptSemanticValidatorTest {
                   "errors": []
                 }
                 """);
-        PromptSlotJsonSchemaLoader slotJsonSchemaLoader =
-                (scenarioCode, language) -> Map.of("required", java.util.List.of("通知主题"));
-        LlmBackedPromptSemanticValidator validator = new LlmBackedPromptSemanticValidator(
-                llmClient, slotJsonSchemaLoader, "semantic system", "semantic user");
+        LlmBackedPromptSemanticValidator validator =
+                new LlmBackedPromptSemanticValidator(llmClient, SLOT_SCHEMA_LOADER, "semantic system", "semantic user");
 
         assertDoesNotThrow(() -> validator.validate(
                 "## 通知主题\nIncident\n",
@@ -54,13 +56,11 @@ class LlmBackedPromptSemanticValidatorTest {
     }
 
     @Test
-    void validateReturnsSlotValidationErrorWhenSemanticValidatorRejectsSlots() throws IOException {
+    void validateReturnsSlotValidationErrorWhenSemanticValidatorRejectsSlots() throws Exception {
         LLMClient llmClient = buildClient(
                 "{\"passed\":false,\"errors\":[{\"slot_name\":\"通知主题\",\"code\":\"semantic_mismatch\",\"message\":\"通知主题不匹配\"}]}");
-        PromptSlotJsonSchemaLoader slotJsonSchemaLoader =
-                (scenarioCode, language) -> Map.of("required", java.util.List.of("通知主题"));
-        LlmBackedPromptSemanticValidator validator = new LlmBackedPromptSemanticValidator(
-                llmClient, slotJsonSchemaLoader, "semantic system", "semantic user");
+        LlmBackedPromptSemanticValidator validator =
+                new LlmBackedPromptSemanticValidator(llmClient, SLOT_SCHEMA_LOADER, "semantic system", "semantic user");
 
         PromptComplianceCheckException error = assertThrows(
                 PromptComplianceCheckException.class,

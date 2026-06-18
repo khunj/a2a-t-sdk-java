@@ -13,13 +13,7 @@ class StructuredLlmRuntimeConfigTest {
     @Test
     void fromMergesRequestOverridesOnTopOfClientDefaults() {
         LlmClientConfig defaults = new LlmClientConfig(
-                "openai_compatible",
-                "gpt-4.1",
-                "default-key",
-                "https://default.example.com/v1",
-                1024,
-                0.2d,
-                30.0d);
+                "openai_compatible", "gpt-4.1", "default-key", "https://default.example.com/v1", 1024, 0.2d, 30.0d);
         StructuredGenerationRequest request = new StructuredGenerationRequest(
                 List.of(new PromptMessage("user", "extract slots")),
                 Map.of("type", "object"),

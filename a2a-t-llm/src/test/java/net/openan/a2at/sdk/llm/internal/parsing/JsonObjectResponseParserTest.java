@@ -23,7 +23,8 @@ class JsonObjectResponseParserTest {
 
     @Test
     void parsesStructuredJsonObjectWithArraysAndNestedObjects() {
-        Map<String, Object> payload = parser.parse("""
+        Map<String, Object> payload = parser.parse(
+                """
                 {
                   "matched": true,
                   "scenario_code": "energy_saving",

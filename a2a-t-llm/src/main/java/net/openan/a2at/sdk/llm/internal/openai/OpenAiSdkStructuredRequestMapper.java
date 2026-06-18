@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import net.openan.a2at.sdk.core.model.PromptMessage;
-import net.openan.a2at.sdk.llm.model.StructuredGenerationRequest;
 import net.openan.a2at.sdk.llm.config.StructuredLlmRuntimeConfig;
+import net.openan.a2at.sdk.llm.model.StructuredGenerationRequest;
 
 /**
  * Maps one SDK structured request into one OpenAI chat completions request.
@@ -46,10 +46,12 @@ public final class OpenAiSdkStructuredRequestMapper {
     private static ChatCompletionMessageParam mapMessage(PromptMessage message) {
         String normalizedRole = message.role() == null ? "" : message.role().toLowerCase(Locale.ROOT);
         if ("system".equals(normalizedRole)) {
-            return ChatCompletionMessageParam.ofSystem(
-                    ChatCompletionSystemMessageParam.builder().content(message.content()).build());
+            return ChatCompletionMessageParam.ofSystem(ChatCompletionSystemMessageParam.builder()
+                    .content(message.content())
+                    .build());
         }
-        return ChatCompletionMessageParam.ofUser(
-                ChatCompletionUserMessageParam.builder().content(message.content()).build());
+        return ChatCompletionMessageParam.ofUser(ChatCompletionUserMessageParam.builder()
+                .content(message.content())
+                .build());
     }
 }

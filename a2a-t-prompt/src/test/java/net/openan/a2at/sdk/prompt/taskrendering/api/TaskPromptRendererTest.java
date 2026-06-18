@@ -3,9 +3,6 @@ package net.openan.a2at.sdk.prompt.taskrendering.api;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Map;
 import net.openan.a2at.sdk.prompt.taskrendering.exception.TaskPromptRenderException;
 import org.junit.jupiter.api.Test;
@@ -33,9 +30,8 @@ class TaskPromptRendererTest {
 
     @Test
     void renderSupportsNonAsciiPlaceholders() {
-        String prompt = renderer.render(
-                "通知主题: {{通知主题}}\n订阅条件: {{订阅条件}}",
-                Map.of("通知主题", "Incident", "订阅条件", "故障优先级为：严重"));
+        String prompt =
+                renderer.render("通知主题: {{通知主题}}\n订阅条件: {{订阅条件}}", Map.of("通知主题", "Incident", "订阅条件", "故障优先级为：严重"));
 
         assertEquals("通知主题: Incident\n订阅条件: 故障优先级为：严重", prompt);
     }
@@ -78,12 +74,7 @@ class TaskPromptRendererTest {
                         "task_target", "完成故障诊断并提供处置建议。",
                         "expected_output", "返回结构化诊断结果。"));
 
-        assertEquals(
-                "## 任务目标\n"
-                        + "完成故障诊断并提供处置建议。\n\n"
-                        + "## 期望输出\n"
-                        + "返回结构化诊断结果。\n",
-                prompt);
+        assertEquals("## 任务目标\n" + "完成故障诊断并提供处置建议。\n\n" + "## 期望输出\n" + "返回结构化诊断结果。\n", prompt);
     }
 
     @Test

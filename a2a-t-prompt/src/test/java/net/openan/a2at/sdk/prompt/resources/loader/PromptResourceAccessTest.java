@@ -3,7 +3,6 @@ package net.openan.a2at.sdk.prompt.resources.loader;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,7 +22,13 @@ class PromptResourceAccessTest {
 
     @Test
     void createLocalFileAccessLoadsPromptsTemplatesScenariosAndSlotsFromSameRoot() throws IOException {
-        write(promptRootDir.resolve("prompts").resolve("analysis").resolve("en").resolve("system.md"), "Local system prompt.");
+        write(
+                promptRootDir
+                        .resolve("prompts")
+                        .resolve("analysis")
+                        .resolve("en")
+                        .resolve("system.md"),
+                "Local system prompt.");
         write(
                 promptRootDir
                         .resolve("templates")
@@ -46,7 +51,11 @@ class PromptResourceAccessTest {
                 }
                 """);
         write(
-                promptRootDir.resolve("slots").resolve("incident_triage").resolve("en").resolve("slot.json"),
+                promptRootDir
+                        .resolve("slots")
+                        .resolve("incident_triage")
+                        .resolve("en")
+                        .resolve("slot.json"),
                 """
                 {
                   "required": ["service"],
@@ -57,7 +66,7 @@ class PromptResourceAccessTest {
                 """);
 
         PromptResourceAccess access =
-                PromptResourceAccess.create(new PromptRuntimeConfig("en-US","local_file", promptRootDir.toString()));
+                PromptResourceAccess.create(new PromptRuntimeConfig("en-US", "local_file", promptRootDir.toString()));
 
         assertFalse(access.classpath());
         assertEquals(promptRootDir, access.localRootDir());
@@ -76,12 +85,16 @@ class PromptResourceAccessTest {
         PromptResourceAccess access =
                 PromptResourceAccess.create(new PromptRuntimeConfig("en-US", "local_file", promptRootDir.toString()));
 
-        ResourceNotFoundException exception = assertThrows(
-                ResourceNotFoundException.class,
-                () -> access.loadPrompt("analysis", "en", "missing.md"));
+        ResourceNotFoundException exception =
+                assertThrows(ResourceNotFoundException.class, () -> access.loadPrompt("analysis", "en", "missing.md"));
 
         assertEquals(
-                promptRootDir.resolve("prompts").resolve("analysis").resolve("en").resolve("missing.md").toString(),
+                promptRootDir
+                        .resolve("prompts")
+                        .resolve("analysis")
+                        .resolve("en")
+                        .resolve("missing.md")
+                        .toString(),
                 exception.resourcePath());
     }
 
@@ -89,7 +102,8 @@ class PromptResourceAccessTest {
     void unsupportedSourceTypeFailsFast() {
         UnsupportedOperationException exception = assertThrows(
                 UnsupportedOperationException.class,
-                () -> PromptResourceAccess.create(new PromptRuntimeConfig("en-US","database", promptRootDir.toString())));
+                () -> PromptResourceAccess.create(
+                        new PromptRuntimeConfig("en-US", "database", promptRootDir.toString())));
 
         assertEquals("Unsupported prompt source type: database", exception.getMessage());
     }

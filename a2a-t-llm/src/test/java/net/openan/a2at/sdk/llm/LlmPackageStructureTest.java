@@ -23,12 +23,15 @@ class LlmPackageStructureTest {
     void llmSubpackagesFollowCapabilityAndInternalSplit() throws IOException {
         Path root = Path.of("src", "main", "java", "net", "openan", "a2at", "sdk", "llm");
 
-        assertEquals(List.of("LLMAdapter.java", "OpenAICompatibleAdapter.java"), topLevelJavaFiles(root.resolve("adapter")));
+        assertEquals(
+                List.of("LLMAdapter.java", "OpenAICompatibleAdapter.java"), topLevelJavaFiles(root.resolve("adapter")));
         assertEquals(
                 List.of("LLMResponse.java", "LlmUsage.java", "StructuredGenerationRequest.java"),
                 topLevelJavaFiles(root.resolve("model")));
         assertEquals(List.of("LlmConfigException.java"), topLevelJavaFiles(root.resolve("exception")));
-        assertEquals(List.of("LlmClientConfig.java", "StructuredLlmRuntimeConfig.java"), topLevelJavaFiles(root.resolve("config")));
+        assertEquals(
+                List.of("LlmClientConfig.java", "StructuredLlmRuntimeConfig.java"),
+                topLevelJavaFiles(root.resolve("config")));
         assertEquals(
                 List.of("JsonObjectResponseParser.java"),
                 topLevelJavaFiles(root.resolve("internal").resolve("parsing")));
@@ -47,12 +50,17 @@ class LlmPackageStructureTest {
         assertFalse(Files.exists(root.resolve("StructuredGenerationRequest.java")));
         assertFalse(Files.exists(root.resolve("internal").resolve("legacy")));
         assertFalse(Files.exists(root.resolve("internal").resolve("legacy").resolve("StructuredLlmRequest.java")));
-        assertFalse(Files.exists(root.resolve("internal").resolve("legacy").resolve("OpenAiCompatibleClientConfig.java")));
-        assertFalse(Files.exists(root.resolve("internal").resolve("legacy").resolve("LegacyStructuredLlmClientAdapter.java")));
+        assertFalse(
+                Files.exists(root.resolve("internal").resolve("legacy").resolve("OpenAiCompatibleClientConfig.java")));
+        assertFalse(Files.exists(
+                root.resolve("internal").resolve("legacy").resolve("LegacyStructuredLlmClientAdapter.java")));
         assertFalse(Files.exists(root.resolve("internal").resolve("openai").resolve("OpenAiCompatibleTransport.java")));
-        assertFalse(Files.exists(root.resolve("internal").resolve("openai").resolve("OpenAiCompatiblePayloadBuilder.java")));
-        assertFalse(Files.exists(root.resolve("internal").resolve("openai").resolve("OpenAiCompatibleResponseParser.java")));
-        assertFalse(Files.exists(root.resolve("internal").resolve("openai").resolve("OpenAiCompatibleStructuredLlmClient.java")));
+        assertFalse(Files.exists(
+                root.resolve("internal").resolve("openai").resolve("OpenAiCompatiblePayloadBuilder.java")));
+        assertFalse(Files.exists(
+                root.resolve("internal").resolve("openai").resolve("OpenAiCompatibleResponseParser.java")));
+        assertFalse(Files.exists(
+                root.resolve("internal").resolve("openai").resolve("OpenAiCompatibleStructuredLlmClient.java")));
         assertFalse(Files.exists(root.resolve("spi")));
         assertFalse(Files.exists(root.resolve("api")));
         assertTrue(Files.exists(root.resolve("adapter")));
@@ -70,8 +78,10 @@ class LlmPackageStructureTest {
         assertTrue(Files.exists(root.resolve("exception").resolve("LlmConfigException.java")));
         assertTrue(Files.exists(root.resolve("internal").resolve("parsing").resolve("JsonObjectResponseParser.java")));
         assertTrue(Files.exists(root.resolve("internal").resolve("openai").resolve("OpenAiSdkResponseExecutor.java")));
-        assertTrue(Files.exists(root.resolve("internal").resolve("openai").resolve("OpenAiSdkStructuredRequestMapper.java")));
-        assertTrue(Files.exists(root.resolve("internal").resolve("openai").resolve("OpenAiSdkStructuredResponseMapper.java")));
+        assertTrue(Files.exists(
+                root.resolve("internal").resolve("openai").resolve("OpenAiSdkStructuredRequestMapper.java")));
+        assertTrue(Files.exists(
+                root.resolve("internal").resolve("openai").resolve("OpenAiSdkStructuredResponseMapper.java")));
     }
 
     private static List<String> topLevelJavaFiles(Path path) throws IOException {

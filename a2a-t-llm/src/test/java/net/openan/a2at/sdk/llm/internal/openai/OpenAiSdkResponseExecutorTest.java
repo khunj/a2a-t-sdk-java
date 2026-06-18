@@ -12,8 +12,8 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import net.openan.a2at.sdk.core.model.PromptMessage;
-import net.openan.a2at.sdk.llm.model.StructuredGenerationRequest;
 import net.openan.a2at.sdk.llm.config.StructuredLlmRuntimeConfig;
+import net.openan.a2at.sdk.llm.model.StructuredGenerationRequest;
 import org.junit.jupiter.api.Test;
 
 class OpenAiSdkResponseExecutorTest {
@@ -34,13 +34,10 @@ class OpenAiSdkResponseExecutorTest {
                     0.0d,
                     0.2d);
             StructuredGenerationRequest request = new StructuredGenerationRequest(
-                    List.of(new PromptMessage("user", "respond with json")),
-                    Map.of("type", "object"));
+                    List.of(new PromptMessage("user", "respond with json")), Map.of("type", "object"));
 
-            assertThrows(
-                    RuntimeException.class,
-                    () -> OpenAiSdkResponseExecutor.defaultExecutor()
-                            .execute(runtimeConfig, new OpenAiSdkStructuredRequestMapper().map(request, runtimeConfig)));
+            assertThrows(RuntimeException.class, () -> OpenAiSdkResponseExecutor.defaultExecutor()
+                    .execute(runtimeConfig, new OpenAiSdkStructuredRequestMapper().map(request, runtimeConfig)));
         } finally {
             server.stop(0);
         }
@@ -49,7 +46,8 @@ class OpenAiSdkResponseExecutorTest {
     private void writeDelayedChatCompletionResponse(HttpExchange exchange) throws IOException {
         try {
             Thread.sleep(Duration.ofSeconds(1).toMillis());
-            byte[] responseBody = """
+            byte[] responseBody =
+                    """
                     {
                       "id": "chatcmpl_slow",
                       "choices": [
@@ -74,7 +72,7 @@ class OpenAiSdkResponseExecutorTest {
                       }
                     }
                     """
-                    .getBytes(StandardCharsets.UTF_8);
+                            .getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().add("Content-Type", "application/json");
             exchange.sendResponseHeaders(200, responseBody.length);
             try (OutputStream outputStream = exchange.getResponseBody()) {

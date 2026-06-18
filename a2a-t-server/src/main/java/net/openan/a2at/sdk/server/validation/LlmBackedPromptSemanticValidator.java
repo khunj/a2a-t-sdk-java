@@ -8,7 +8,8 @@ import java.util.Map;
 import net.openan.a2at.sdk.core.model.PromptMessage;
 import net.openan.a2at.sdk.llm.LLMClient;
 import net.openan.a2at.sdk.llm.model.StructuredGenerationRequest;
-import net.openan.a2at.sdk.prompt.resources.loader.PromptSlotJsonSchemaLoader;
+import net.openan.a2at.sdk.prompt.resources.loader.PromptSlotSchemaLoader;
+import net.openan.a2at.sdk.prompt.resources.model.PromptSlotSchema;
 import net.openan.a2at.sdk.server.exception.PromptComplianceCheckException;
 import net.openan.a2at.sdk.server.model.ProcessedPromptMetadata;
 
@@ -23,7 +24,7 @@ public final class LlmBackedPromptSemanticValidator implements ServerPromptSeman
 
     private final LLMClient llmClient;
 
-    private final PromptSlotJsonSchemaLoader slotJsonSchemaLoader;
+    private final PromptSlotSchemaLoader slotSchemaLoader;
 
     private final String systemPrompt;
 
@@ -33,44 +34,45 @@ public final class LlmBackedPromptSemanticValidator implements ServerPromptSeman
      * Creates an LLM-backed semantic validator.
      *
      * @param llmClient LLM client for structured generation
-     * @param slotJsonSchemaLoader loader for slot JSON schemas
+     * @param slotSchemaLoader loader for slot schemas
      * @param systemPrompt system prompt for the LLM
      * @param userPrompt user prompt template for the LLM
      */
     public LlmBackedPromptSemanticValidator(
-            LLMClient llmClient,
-            PromptSlotJsonSchemaLoader slotJsonSchemaLoader,
-            String systemPrompt,
-            String userPrompt) {
+            LLMClient llmClient, PromptSlotSchemaLoader slotSchemaLoader, String systemPrompt, String userPrompt) {
         this.llmClient = llmClient;
-        this.slotJsonSchemaLoader = slotJsonSchemaLoader;
+        this.slotSchemaLoader = slotSchemaLoader;
         this.systemPrompt = systemPrompt;
         this.userPrompt = userPrompt;
     }
 
     @Override
     public void validate(String processedPromptText, ProcessedPromptMetadata metadata) {
-        Map<String, Object> slotJsonSchema =
-                slotJsonSchemaLoader.loadSlotJsonSchema(metadata.scenarioCode(), metadata.language());
+        PromptSlotSchema slotSchema = slotSchemaLoader.loadSlotSchema(metadata.scenarioCode(), metadata.language());
         String payload = llmClient
                 .structured(new StructuredGenerationRequest(
                         List.of(
                                 new PromptMessage("system", systemPrompt),
-                                new PromptMessage("user", buildUserPrompt(slotJsonSchema, metadata.slots()))),
+                                new PromptMessage("user", buildUserPrompt(slotSchema, metadata.slots()))),
                         schema()))
                 .content();
         validateResponse(payload);
     }
 
-    private String buildUserPrompt(Map<String, Object> slotJsonSchema, Map<String, String> extractedSlots) {
-        return userPrompt
-                + "\n\n{\n"
-                + "  \"slot_json_schema\": "
-                + toJsonObject(slotJsonSchema)
-                + ",\n"
-                + "  \"extracted_slots\": "
-                + toJsonObject(new LinkedHashMap<>(extractedSlots))
-                + "\n}";
+    private String buildUserPrompt(PromptSlotSchema slotSchema, Map<String, String> extractedSlots) {
+        try {
+            return userPrompt
+                    + "\n\n{\n"
+                    + "  \"slot_json_schema\": "
+                    + OBJECT_MAPPER.writeValueAsString(slotSchema)
+                    + ",\n"
+                    + "  \"extracted_slots\": "
+                    + OBJECT_MAPPER.writeValueAsString(extractedSlots)
+                    + "\n}";
+        } catch (Exception error) {
+            throw new PromptComplianceCheckException(
+                    "slot_validation_error", "Failed to serialize slot schema", "slot_validation");
+        }
     }
 
     private static Map<String, Object> schema() {
@@ -133,53 +135,5 @@ public final class LlmBackedPromptSemanticValidator implements ServerPromptSeman
         }
         Object message = errorMap.get("message");
         return message instanceof String text ? text : null;
-    }
-
-    private static String toJsonObject(Map<String, ?> values) {
-        StringBuilder builder = new StringBuilder("{");
-        boolean first = true;
-        for (Map.Entry<String, ?> entry : values.entrySet()) {
-            if (!first) {
-                builder.append(',');
-            }
-            builder.append('"').append(escape(entry.getKey())).append('"').append(':');
-            builder.append(toJsonValue(entry.getValue()));
-            first = false;
-        }
-        builder.append('}');
-        return builder.toString();
-    }
-
-    private static String toJsonValue(Object value) {
-        if (value == null) {
-            return "null";
-        }
-        if (value instanceof String text) {
-            return '"' + escape(text) + '"';
-        }
-        if (value instanceof Number || value instanceof Boolean) {
-            return String.valueOf(value);
-        }
-        if (value instanceof Map<?, ?> mapValue) {
-            Map<String, Object> normalized = new LinkedHashMap<>();
-            mapValue.forEach((key, item) -> normalized.put(String.valueOf(key), item));
-            return toJsonObject(normalized);
-        }
-        if (value instanceof List<?> listValue) {
-            StringBuilder builder = new StringBuilder("[");
-            for (int index = 0; index < listValue.size(); index++) {
-                if (index > 0) {
-                    builder.append(',');
-                }
-                builder.append(toJsonValue(listValue.get(index)));
-            }
-            builder.append(']');
-            return builder.toString();
-        }
-        return '"' + escape(String.valueOf(value)) + '"';
-    }
-
-    private static String escape(String text) {
-        return text.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 }

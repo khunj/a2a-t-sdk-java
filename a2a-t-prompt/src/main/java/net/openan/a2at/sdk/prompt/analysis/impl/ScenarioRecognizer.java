@@ -1,5 +1,9 @@
 package net.openan.a2at.sdk.prompt.analysis.impl;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import net.openan.a2at.sdk.core.json.JsonValueParser;
 import net.openan.a2at.sdk.core.model.PromptMessage;
 import net.openan.a2at.sdk.llm.LLMClient;
@@ -8,11 +12,6 @@ import net.openan.a2at.sdk.llm.model.StructuredGenerationRequest;
 import net.openan.a2at.sdk.prompt.analysis.exception.ScenarioRecognitionException;
 import net.openan.a2at.sdk.prompt.analysis.model.ScenarioRecognitionResult;
 import net.openan.a2at.sdk.prompt.resources.model.ScenarioDefinition;
-
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Minimal scenario recognizer that delegates classification to a structured LLM response.
@@ -35,8 +34,7 @@ public final class ScenarioRecognizer {
     }
 
     /**
-     * Creates a scenario recognizer backed by one LLM client and one shared JSON parser
-     * abstraction.
+     * Creates a scenario recognizer backed by one LLM client and one shared JSON parser abstraction.
      *
      * @param llmClient LLM client
      * @param parser shared JSON parser abstraction
@@ -59,7 +57,8 @@ public final class ScenarioRecognizer {
             String normalizedInput, List<ScenarioDefinition> scenarios, String systemPrompt, String userPrompt) {
         StructuredGenerationRequest request = new StructuredGenerationRequest(
                 buildMessages(normalizedInput, scenarios, systemPrompt, userPrompt), schema());
-        Map<String, Object> payload = parser.parseObject(llmClient.structured(request).content());
+        Map<String, Object> payload =
+                parser.parseObject(llmClient.structured(request).content());
 
         boolean matched = Boolean.TRUE.equals(payload.get("matched"));
         String scenarioCode = (String) payload.get("scenario_code");

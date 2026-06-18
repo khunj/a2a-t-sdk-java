@@ -37,7 +37,8 @@ class OpenAiSdkStructuredResponseMapperTest {
                         .build())
                 .build();
 
-        Class<?> mapperClass = Class.forName("net.openan.a2at.sdk.llm.internal.openai.OpenAiSdkStructuredResponseMapper");
+        Class<?> mapperClass =
+                Class.forName("net.openan.a2at.sdk.llm.internal.openai.OpenAiSdkStructuredResponseMapper");
         Object mapper = mapperClass.getDeclaredConstructor().newInstance();
         Method mapMethod = mapperClass.getDeclaredMethod("map", ChatCompletion.class);
 

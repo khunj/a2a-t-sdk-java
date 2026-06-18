@@ -86,7 +86,11 @@ class LocalFilePromptLoadersTest {
     @Test
     void loadSlotSchemaMapsJacksonAnnotatedRecords() throws IOException {
         write(
-                promptRootDir.resolve("slots").resolve("incident_triage").resolve("en").resolve("slot.json"),
+                promptRootDir
+                        .resolve("slots")
+                        .resolve("incident_triage")
+                        .resolve("en")
+                        .resolve("slot.json"),
                 """
                 {
                   "required": ["severity", "service"],
@@ -116,16 +120,18 @@ class LocalFilePromptLoadersTest {
         assertEquals("service", schema.slotDefinitions().get(0).name());
         assertEquals(true, schema.slotDefinitions().get(0).required());
         assertEquals("^[a-z0-9-]+$", schema.slotDefinitions().get(0).pattern());
-        assertEquals(List.of("1", "2", "3", "4", "5"), schema.slotDefinitions().get(1).allowedValues());
+        assertEquals(
+                List.of("1", "2", "3", "4", "5"),
+                schema.slotDefinitions().get(1).allowedValues());
         assertEquals("Severity from 1 to 5", schema.slotDefinitions().get(1).description());
         assertEquals("note", schema.slotDefinitions().get(2).name());
     }
 
     @Test
     void missingTemplateIncludesResolvedLocalPathInResourceNotFoundException() {
-        ResourceNotFoundException exception = assertThrows(
-                ResourceNotFoundException.class,
-                () -> new LocalFilePromptTemplateLoader(promptRootDir).loadTemplate("incident_triage", "en"));
+        ResourceNotFoundException exception =
+                assertThrows(ResourceNotFoundException.class, () -> new LocalFilePromptTemplateLoader(promptRootDir)
+                        .loadTemplate("incident_triage", "en"));
 
         assertEquals(
                 promptRootDir
@@ -140,16 +146,24 @@ class LocalFilePromptLoadersTest {
     @Test
     void malformedLocalSlotSchemaIsWrappedAsSdkException() throws IOException {
         write(
-                promptRootDir.resolve("slots").resolve("incident_triage").resolve("en").resolve("slot.json"),
+                promptRootDir
+                        .resolve("slots")
+                        .resolve("incident_triage")
+                        .resolve("en")
+                        .resolve("slot.json"),
                 "{ \"required\": [\"severity\"], \"properties\": ");
 
-        SdkException exception = assertThrows(
-                SdkException.class,
-                () -> new LocalFilePromptSlotSchemaLoader(promptRootDir).loadSlotSchema("incident_triage", "en"));
+        SdkException exception =
+                assertThrows(SdkException.class, () -> new LocalFilePromptSlotSchemaLoader(promptRootDir)
+                        .loadSlotSchema("incident_triage", "en"));
 
         assertEquals(
                 "Failed to read slot schema resource: "
-                        + promptRootDir.resolve("slots").resolve("incident_triage").resolve("en").resolve("slot.json"),
+                        + promptRootDir
+                                .resolve("slots")
+                                .resolve("incident_triage")
+                                .resolve("en")
+                                .resolve("slot.json"),
                 exception.getMessage());
     }
 

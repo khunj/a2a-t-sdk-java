@@ -49,7 +49,8 @@ public record LlmClientConfig(
                 baseUrl,
                 parseInt(values.get("A2AT_LLM_MAX_TOKENS"), DEFAULT_MAX_TOKENS, "A2AT_LLM_MAX_TOKENS"),
                 parseDouble(values.get("A2AT_LLM_TEMPERATURE"), DEFAULT_TEMPERATURE, "A2AT_LLM_TEMPERATURE"),
-                parseDouble(values.get("A2AT_LLM_TIMEOUT_SECONDS"), DEFAULT_TIMEOUT_SECONDS, "A2AT_LLM_TIMEOUT_SECONDS"));
+                parseDouble(
+                        values.get("A2AT_LLM_TIMEOUT_SECONDS"), DEFAULT_TIMEOUT_SECONDS, "A2AT_LLM_TIMEOUT_SECONDS"));
     }
 
     private static String required(Map<String, String> values, String key) {

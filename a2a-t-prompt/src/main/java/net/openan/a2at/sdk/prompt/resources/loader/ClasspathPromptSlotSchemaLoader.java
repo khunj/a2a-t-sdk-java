@@ -7,7 +7,6 @@ import net.openan.a2at.sdk.prompt.resources.model.PromptSlotSchema;
 import net.openan.a2at.sdk.resources.ClasspathPromptResourceLoader;
 import net.openan.a2at.sdk.resources.PromptResourceKey;
 
-
 /**
  * Loads shared slot schemas from packaged classpath prompt resources.
  *
@@ -25,7 +24,8 @@ public final class ClasspathPromptSlotSchemaLoader implements PromptSlotSchemaLo
     public PromptSlotSchema loadSlotSchema(String scenarioCode, String language) {
         String payload = resourceLoader.loadText(new PromptResourceKey("slots", scenarioCode, language, "slot.json"));
         try {
-            return PromptResourceJsonParser.parse(payload, PromptSlotJsonSchema.class).toPromptSlotSchema(scenarioCode);
+            return PromptResourceJsonParser.parse(payload, PromptSlotJsonSchema.class)
+                    .toPromptSlotSchema(scenarioCode);
         } catch (JsonProcessingException exception) {
             throw new SdkException("Failed to parse slot schema: " + scenarioCode, exception);
         }

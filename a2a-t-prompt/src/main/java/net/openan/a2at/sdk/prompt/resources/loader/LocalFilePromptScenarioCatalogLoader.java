@@ -28,7 +28,8 @@ public final class LocalFilePromptScenarioCatalogLoader {
             throw new ResourceNotFoundException("Prompt resource file does not exist.", catalogPath.toString());
         }
         try {
-            return PromptResourceJsonParser.parse(Files.readString(catalogPath), ScenarioCatalog.class).scenarios();
+            return PromptResourceJsonParser.parse(Files.readString(catalogPath), ScenarioCatalog.class)
+                    .scenarios();
         } catch (IOException exception) {
             throw new SdkException("Failed to read scenario catalog: " + catalogPath, exception);
         }

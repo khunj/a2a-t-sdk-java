@@ -3,13 +3,13 @@ package net.openan.a2at.sdk.llm.adapter;
 import com.openai.models.chat.completions.ChatCompletion;
 import com.openai.models.chat.completions.ChatCompletionCreateParams;
 import java.util.function.BiFunction;
-import net.openan.a2at.sdk.llm.model.LLMResponse;
-import net.openan.a2at.sdk.llm.model.StructuredGenerationRequest;
 import net.openan.a2at.sdk.llm.config.LlmClientConfig;
 import net.openan.a2at.sdk.llm.config.StructuredLlmRuntimeConfig;
 import net.openan.a2at.sdk.llm.internal.openai.OpenAiSdkResponseExecutor;
 import net.openan.a2at.sdk.llm.internal.openai.OpenAiSdkStructuredRequestMapper;
 import net.openan.a2at.sdk.llm.internal.openai.OpenAiSdkStructuredResponseMapper;
+import net.openan.a2at.sdk.llm.model.LLMResponse;
+import net.openan.a2at.sdk.llm.model.StructuredGenerationRequest;
 
 /**
  * Default public OpenAI-compatible adapter backed by the OpenAI Java SDK.
@@ -27,9 +27,7 @@ public class OpenAICompatibleAdapter implements LLMAdapter {
     private final BiFunction<StructuredLlmRuntimeConfig, ChatCompletionCreateParams, ChatCompletion>
             chatCompletionExecutor;
 
-    /**
-     * Creates one unconfigured adapter placeholder.
-     */
+    /** Creates one unconfigured adapter placeholder. */
     public OpenAICompatibleAdapter() {
         this(null, new OpenAiSdkStructuredRequestMapper(), new OpenAiSdkStructuredResponseMapper(), null);
     }
@@ -65,6 +63,7 @@ public class OpenAICompatibleAdapter implements LLMAdapter {
             throw new UnsupportedOperationException("OpenAI-compatible adapter is not configured");
         }
         StructuredLlmRuntimeConfig runtimeConfig = StructuredLlmRuntimeConfig.from(clientConfig, request);
-        return responseMapper.map(chatCompletionExecutor.apply(runtimeConfig, requestMapper.map(request, runtimeConfig)));
+        return responseMapper.map(
+                chatCompletionExecutor.apply(runtimeConfig, requestMapper.map(request, runtimeConfig)));
     }
 }

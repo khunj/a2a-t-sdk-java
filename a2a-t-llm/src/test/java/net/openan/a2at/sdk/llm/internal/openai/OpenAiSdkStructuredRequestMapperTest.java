@@ -8,8 +8,8 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import net.openan.a2at.sdk.core.model.PromptMessage;
-import net.openan.a2at.sdk.llm.model.StructuredGenerationRequest;
 import net.openan.a2at.sdk.llm.config.StructuredLlmRuntimeConfig;
+import net.openan.a2at.sdk.llm.model.StructuredGenerationRequest;
 import org.junit.jupiter.api.Test;
 
 class OpenAiSdkStructuredRequestMapperTest {
@@ -32,7 +32,8 @@ class OpenAiSdkStructuredRequestMapperTest {
         StructuredLlmRuntimeConfig runtimeConfig = new StructuredLlmRuntimeConfig(
                 "openai_compatible", "gpt-4.1-mini", "test-key", "https://api.openai.com/v1", 256, 0.25, 15.0);
 
-        Class<?> mapperClass = Class.forName("net.openan.a2at.sdk.llm.internal.openai.OpenAiSdkStructuredRequestMapper");
+        Class<?> mapperClass =
+                Class.forName("net.openan.a2at.sdk.llm.internal.openai.OpenAiSdkStructuredRequestMapper");
         Object mapper = mapperClass.getDeclaredConstructor().newInstance();
         Method mapMethod = mapperClass.getDeclaredMethod(
                 "map", StructuredGenerationRequest.class, StructuredLlmRuntimeConfig.class);
@@ -50,8 +51,7 @@ class OpenAiSdkStructuredRequestMapperTest {
                 params.messages().get(0).asSystem().content().asText());
         assertTrue(params.messages().get(1).isUser());
         assertEquals(
-                "city is shanghai",
-                params.messages().get(1).asUser().content().asText());
+                "city is shanghai", params.messages().get(1).asUser().content().asText());
         assertTrue(params.responseFormat().orElseThrow().isJsonObject());
         assertEquals(
                 "json_object",

@@ -1,10 +1,9 @@
 package net.openan.a2at.sdk.prompt.taskrendering.api;
 
-import net.openan.a2at.sdk.prompt.taskrendering.exception.TaskPromptRenderException;
-
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import net.openan.a2at.sdk.prompt.taskrendering.exception.TaskPromptRenderException;
 
 /**
  * Renders plain prompt bodies from lightweight template placeholders.
@@ -15,8 +14,8 @@ public final class TaskPromptRenderer {
 
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{\\{?\\s*([^{}]+?)\\s*\\}\\}?");
     private static final Pattern SECTION_HEADER_PATTERN = Pattern.compile("^##\\s+.+$");
-    private static final Pattern STANDALONE_SLOT_LINE_PATTERN =
-            Pattern.compile("^\\s*(\\{\\{?\\s*[^{}]+?\\s*\\}\\}?)(?:\\s*(?:\\(Required\\)|\\(Optional\\)|（必选）|（可选）))?\\s*$");
+    private static final Pattern STANDALONE_SLOT_LINE_PATTERN = Pattern.compile(
+            "^\\s*(\\{\\{?\\s*[^{}]+?\\s*\\}\\}?)(?:\\s*(?:\\(Required\\)|\\(Optional\\)|（必选）|（可选）))?\\s*$");
 
     /**
      * Renders a template by replacing slot placeholders with normalized slot values.
@@ -71,7 +70,11 @@ public final class TaskPromptRenderer {
     }
 
     private static void appendCollapsedSection(
-            StringBuilder collapsed, String[] lines, int sectionStart, int nextSectionStart, boolean appendTrailingNewline) {
+            StringBuilder collapsed,
+            String[] lines,
+            int sectionStart,
+            int nextSectionStart,
+            boolean appendTrailingNewline) {
         appendLine(collapsed, lines[sectionStart], true);
 
         Matcher standaloneSlotMatcher = firstStandaloneSlotMatcher(lines, sectionStart + 1, nextSectionStart);

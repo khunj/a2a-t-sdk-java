@@ -128,7 +128,8 @@ public interface PromptResourceAccess {
 
         @Override
         public String loadPrompt(String promptCategory, String language, String fileName) {
-            Path promptPath = promptRootDir.resolve("prompts")
+            Path promptPath = promptRootDir
+                    .resolve("prompts")
                     .resolve(promptCategory)
                     .resolve(language)
                     .resolve(fileName);

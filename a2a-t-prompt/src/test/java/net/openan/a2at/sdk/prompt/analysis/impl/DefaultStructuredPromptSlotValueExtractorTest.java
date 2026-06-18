@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import net.openan.a2at.sdk.llm.LLMClient;
 import net.openan.a2at.sdk.llm.adapter.LLMAdapter;
-import net.openan.a2at.sdk.llm.internal.assembly.DefaultLlmClientBuilder;
 import net.openan.a2at.sdk.llm.model.LLMResponse;
 import net.openan.a2at.sdk.llm.model.LlmUsage;
 import net.openan.a2at.sdk.llm.model.StructuredGenerationRequest;
@@ -22,7 +21,9 @@ class DefaultStructuredPromptSlotValueExtractorTest {
 
     @Test
     void extractSlotsParsesFormattedStructuredJsonPayload() throws IOException {
-        LLMClient llmClient = buildClient(new RecordingAdapter("""
+        LLMClient llmClient = buildClient(
+                new RecordingAdapter(
+                        """
                 {
                   "slots": {
                     "site": "Site A",
@@ -69,7 +70,9 @@ class DefaultStructuredPromptSlotValueExtractorTest {
 
     @Test
     void extractSlotsPreservesSlotTextContainingClosingBrace() throws IOException {
-        LLMClient llmClient = buildClient(new RecordingAdapter("""
+        LLMClient llmClient = buildClient(
+                new RecordingAdapter(
+                        """
                 {
                   "slots": {
                     "site": "Site A",
@@ -105,7 +108,7 @@ class DefaultStructuredPromptSlotValueExtractorTest {
                 A2AT_LLM_MODEL=test-model
                 A2AT_LLM_API_KEY=test-key
                 """);
-        return DefaultLlmClientBuilder.builder().adapter(adapter).build(envFile);
+        return new LLMClient(envFile, adapter);
     }
 
     private static final class RecordingAdapter implements LLMAdapter {

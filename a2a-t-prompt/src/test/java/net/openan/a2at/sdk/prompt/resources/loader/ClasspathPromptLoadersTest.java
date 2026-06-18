@@ -3,14 +3,13 @@ package net.openan.a2at.sdk.prompt.resources.loader;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.List;
 import net.openan.a2at.sdk.core.exception.ResourceNotFoundException;
 import net.openan.a2at.sdk.core.exception.SdkException;
 import net.openan.a2at.sdk.prompt.resources.model.PromptSlotSchema;
 import net.openan.a2at.sdk.prompt.resources.model.ScenarioDefinition;
 import net.openan.a2at.sdk.resources.ClasspathPromptResourceLoader;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 class ClasspathPromptLoadersTest {
 
@@ -69,7 +68,9 @@ class ClasspathPromptLoadersTest {
         assertEquals(7, schema.slotDefinitions().size());
         assertEquals("task_id", schema.slotDefinitions().get(0).name());
         assertEquals(true, schema.slotDefinitions().get(0).required());
-        assertEquals(List.of("1", "2", "3", "4", "5"), schema.slotDefinitions().get(1).allowedValues());
+        assertEquals(
+                List.of("1", "2", "3", "4", "5"),
+                schema.slotDefinitions().get(1).allowedValues());
         assertEquals(
                 "Business priority from 1 (highest urgency) to 5 (lowest urgency)",
                 schema.slotDefinitions().get(1).description());
@@ -77,20 +78,17 @@ class ClasspathPromptLoadersTest {
 
     @Test
     void missingClasspathResourceReportsResolvedResourcePath() {
-        ResourceNotFoundException exception = assertThrows(
-                ResourceNotFoundException.class,
-                () -> new ClasspathPromptTemplateLoader(resourceLoader).loadTemplate("missing_scenario", "en"));
+        ResourceNotFoundException exception =
+                assertThrows(ResourceNotFoundException.class, () -> new ClasspathPromptTemplateLoader(resourceLoader)
+                        .loadTemplate("missing_scenario", "en"));
 
-        assertEquals(
-                "prompt_resources\\templates\\missing_scenario\\en\\template.md",
-                exception.resourcePath());
+        assertEquals("prompt_resources\\templates\\missing_scenario\\en\\template.md", exception.resourcePath());
     }
 
     @Test
     void invalidClasspathScenarioCatalogIsWrappedAsSdkException() {
         SdkException exception = assertThrows(
-                SdkException.class,
-                () -> new ClasspathPromptScenarioCatalogLoader(resourceLoader).load("broken"));
+                SdkException.class, () -> new ClasspathPromptScenarioCatalogLoader(resourceLoader).load("broken"));
 
         assertEquals("Failed to parse scenario catalog for language: broken", exception.getMessage());
     }

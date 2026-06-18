@@ -23,8 +23,7 @@ public final class JsonObjectResponseParser implements JsonValueParser {
      */
     public Map<String, Object> parse(String payload) {
         try {
-            Map<String, Object> values = OBJECT_MAPPER.readValue(payload, new TypeReference<>() {
-            });
+            Map<String, Object> values = OBJECT_MAPPER.readValue(payload, new TypeReference<>() {});
             if (values == null) {
                 throw new SdkException("Structured LLM payload must be a JSON object.");
             }

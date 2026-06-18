@@ -30,10 +30,8 @@ public interface OpenAiSdkResponseExecutor {
      * @return default OpenAI SDK executor
      */
     static OpenAiSdkResponseExecutor defaultExecutor() {
-        return (runtimeConfig, requestParams) -> createClient(runtimeConfig)
-                .chat()
-                .completions()
-                .create(requestParams);
+        return (runtimeConfig, requestParams) ->
+                createClient(runtimeConfig).chat().completions().create(requestParams);
     }
 
     private static OpenAIClient createClient(StructuredLlmRuntimeConfig runtimeConfig) {

@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 import java.util.Map;
 import net.openan.a2at.sdk.core.model.PromptMessage;
-import net.openan.a2at.sdk.llm.model.StructuredGenerationRequest;
 import org.junit.jupiter.api.Test;
 
 class StructuredGenerationRequestTest {

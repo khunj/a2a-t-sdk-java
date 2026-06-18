@@ -16,7 +16,6 @@ import net.openan.a2at.sdk.llm.adapter.LLMAdapter;
 import net.openan.a2at.sdk.llm.model.LLMResponse;
 import net.openan.a2at.sdk.llm.model.LlmUsage;
 import net.openan.a2at.sdk.llm.model.StructuredGenerationRequest;
-import net.openan.a2at.sdk.llm.internal.assembly.DefaultLlmClientBuilder;
 import net.openan.a2at.sdk.prompt.analysis.exception.ScenarioRecognitionException;
 import net.openan.a2at.sdk.prompt.analysis.model.ScenarioRecognitionResult;
 import net.openan.a2at.sdk.prompt.resources.model.ScenarioDefinition;
@@ -26,8 +25,8 @@ class ScenarioRecognizerTest {
 
     @Test
     void recognizeBuildsStructuredMessagesAndReturnsMatchedScenario() throws IOException {
-        RecordingAdapter adapter = new RecordingAdapter(
-                "{\"matched\":true,\"scenario_code\":\"energy_saving\",\"error_message\":null}");
+        RecordingAdapter adapter =
+                new RecordingAdapter("{\"matched\":true,\"scenario_code\":\"energy_saving\",\"error_message\":null}");
         LLMClient llmClient = buildClient(adapter);
 
         ScenarioRecognizer recognizer = new ScenarioRecognizer(llmClient);
@@ -48,8 +47,8 @@ class ScenarioRecognizerTest {
 
     @Test
     void recognizeRejectsMatchedPayloadWithoutScenarioCode() throws IOException {
-        LLMClient llmClient = buildClient(new RecordingAdapter(
-                "{\"matched\":true,\"scenario_code\":null,\"error_message\":null}"));
+        LLMClient llmClient =
+                buildClient(new RecordingAdapter("{\"matched\":true,\"scenario_code\":null,\"error_message\":null}"));
 
         ScenarioRecognizer recognizer = new ScenarioRecognizer(llmClient);
 
@@ -94,7 +93,7 @@ class ScenarioRecognizerTest {
                 A2AT_LLM_MODEL=test-model
                 A2AT_LLM_API_KEY=test-key
                 """);
-        return DefaultLlmClientBuilder.builder().adapter(adapter).build(envFile);
+        return new LLMClient(envFile, adapter);
     }
 
     private static final class RecordingAdapter implements LLMAdapter {
