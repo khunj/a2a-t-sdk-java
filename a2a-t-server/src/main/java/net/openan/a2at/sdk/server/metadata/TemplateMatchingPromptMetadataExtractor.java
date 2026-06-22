@@ -3,6 +3,7 @@ package net.openan.a2at.sdk.server.metadata;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.openan.a2at.sdk.prompt.taskrendering.api.TaskPromptRenderer;
@@ -49,18 +50,18 @@ public final class TemplateMatchingPromptMetadataExtractor implements ServerProm
     @Override
     public ProcessedPromptMetadata extract(String processedPromptText) {
         for (PromptTemplateDefinition template : templates) {
-            Map<String, String> slots = tryExtractSlots(processedPromptText, template);
-            if (slots != null) {
-                validateRequiredSlots(slots, template.slotDefinitions());
+            Optional<Map<String, String>> slots = tryExtractSlots(processedPromptText, template);
+            if (slots.isPresent()) {
+                validateRequiredSlots(slots.get(), template.slotDefinitions());
                 return new ProcessedPromptMetadata(
-                        template.scenarioCode(), template.language(), template.templateText(), Map.copyOf(slots));
+                        template.scenarioCode(), template.language(), template.templateText(), Map.copyOf(slots.get()));
             }
         }
         throw new PromptComplianceCheckException(
                 "processed_prompt_parse_error", "Prompt does not match any known template.", "prompt_parse");
     }
 
-    private Map<String, String> tryExtractSlots(String processedPromptText, PromptTemplateDefinition template) {
+    private Optional<Map<String, String>> tryExtractSlots(String processedPromptText, PromptTemplateDefinition template) {
         Matcher placeholderMatcher = PLACEHOLDER_PATTERN.matcher(template.templateText());
         List<String> slotNames = new java.util.ArrayList<>();
         Map<String, String> sentinelSlots = new LinkedHashMap<>();
@@ -86,7 +87,7 @@ public final class TemplateMatchingPromptMetadataExtractor implements ServerProm
             String sentinel = sentinelSlots.get(slotNames.get(index));
             int sentinelIndex = normalizedTemplateText.indexOf(sentinel, cursor);
             if (sentinelIndex < 0) {
-                return null;
+                return Optional.empty();
             }
             pattern.append(Pattern.quote(normalizedTemplateText.substring(cursor, sentinelIndex)));
             pattern.append("(.*?)");
@@ -97,21 +98,21 @@ public final class TemplateMatchingPromptMetadataExtractor implements ServerProm
 
         Matcher match = Pattern.compile(pattern.toString(), Pattern.DOTALL).matcher(processedPromptText);
         if (!match.matches()) {
-            return null;
+            return Optional.empty();
         }
 
         Map<String, String> slots = new LinkedHashMap<>();
         for (int index = 0; index < slotNames.size(); index++) {
             slots.put(slotNames.get(index), match.group(index + 1));
         }
-        return slots;
+        return Optional.of(slots);
     }
 
     private static void validateRequiredSlots(
             Map<String, String> slots, List<PromptTemplateSlotDefinition> slotDefinitions) {
         for (PromptTemplateSlotDefinition definition : slotDefinitions) {
-            String value = slots.get(definition.name());
-            if (definition.required() && (value == null || value.isBlank())) {
+            Optional<String> value = Optional.ofNullable(slots.get(definition.name()));
+            if (definition.required() && !value.filter(slotValue -> !slotValue.isBlank()).isPresent()) {
                 throw new PromptComplianceCheckException(
                         "slot_validation_error",
                         "Required slot '" + definition.name() + "' is missing.",

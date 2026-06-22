@@ -1,6 +1,7 @@
 package net.openan.a2at.sdk.prompt.taskrendering.api;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.openan.a2at.sdk.prompt.taskrendering.exception.TaskPromptRenderException;
@@ -37,7 +38,7 @@ public final class TaskPromptRenderer {
                 throw new TaskPromptRenderException("Unknown slot referenced by template: " + slotName);
             }
             String replacement = slots.get(slotName);
-            matcher.appendReplacement(rendered, Matcher.quoteReplacement(replacement == null ? "" : replacement));
+            matcher.appendReplacement(rendered, Matcher.quoteReplacement(Optional.ofNullable(replacement).orElse("")));
         }
         matcher.appendTail(rendered);
         return rendered.toString();
@@ -77,8 +78,8 @@ public final class TaskPromptRenderer {
             boolean appendTrailingNewline) {
         appendLine(collapsed, lines[sectionStart], true);
 
-        Matcher standaloneSlotMatcher = firstStandaloneSlotMatcher(lines, sectionStart + 1, nextSectionStart);
-        if (standaloneSlotMatcher == null) {
+        Optional<Matcher> standaloneSlotMatcher = firstStandaloneSlotMatcher(lines, sectionStart + 1, nextSectionStart);
+        if (!standaloneSlotMatcher.isPresent()) {
             for (int index = sectionStart + 1; index < nextSectionStart; index++) {
                 appendLine(collapsed, lines[index], index < lines.length - 1);
             }
@@ -89,20 +90,20 @@ public final class TaskPromptRenderer {
         for (int index = sectionStart + 1; index < firstEffectiveLineIndex; index++) {
             appendLine(collapsed, lines[index], true);
         }
-        appendLine(collapsed, standaloneSlotMatcher.group(1), true);
+        appendLine(collapsed, standaloneSlotMatcher.get().group(1), true);
         if (appendTrailingNewline) {
             collapsed.append('\n');
         }
     }
 
-    private static Matcher firstStandaloneSlotMatcher(String[] lines, int startInclusive, int endExclusive) {
+    private static Optional<Matcher> firstStandaloneSlotMatcher(String[] lines, int startInclusive, int endExclusive) {
         int firstEffectiveLineIndex = firstEffectiveLineIndex(lines, startInclusive, endExclusive);
         if (firstEffectiveLineIndex < 0) {
-            return null;
+            return Optional.empty();
         }
 
         Matcher matcher = STANDALONE_SLOT_LINE_PATTERN.matcher(lines[firstEffectiveLineIndex]);
-        return matcher.matches() ? matcher : null;
+        return matcher.matches() ? Optional.of(matcher) : Optional.empty();
     }
 
     private static int firstEffectiveLineIndex(String[] lines, int startInclusive, int endExclusive) {
