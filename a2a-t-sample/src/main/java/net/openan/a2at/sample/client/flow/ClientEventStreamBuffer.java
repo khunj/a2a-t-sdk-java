@@ -75,7 +75,6 @@ public final class ClientEventStreamBuffer implements Iterable<ClientEvent> {
                     }
                     return item;
                 } catch (InterruptedException exception) {
-                    Thread.currentThread().interrupt();
                     finished = true;
                     return END;
                 }

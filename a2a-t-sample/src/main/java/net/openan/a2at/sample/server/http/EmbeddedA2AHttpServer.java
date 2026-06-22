@@ -204,7 +204,7 @@ public final class EmbeddedA2AHttpServer implements AutoCloseable {
         try {
             completed.await();
         } catch (InterruptedException exception) {
-            Thread.currentThread().interrupt();
+            completed.countDown();
         } finally {
             outputStream.close();
         }
@@ -273,7 +273,7 @@ public final class EmbeddedA2AHttpServer implements AutoCloseable {
             try {
                 completed.await();
             } catch (InterruptedException exception) {
-                Thread.currentThread().interrupt();
+                completed.countDown();
             } finally {
                 outputStream.close();
             }

@@ -7,6 +7,7 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import net.openan.a2at.sample.server.agentcard.ServerSampleAgentCardBuilder;
 import net.openan.a2at.sample.server.flow.PromptComplianceChecker;
+import net.openan.a2at.sample.server.flow.ServerFlowInterruptedException;
 import net.openan.a2at.sample.server.flow.ServerSampleAgentExecutor;
 import net.openan.a2at.sample.server.registry.ServerRegistryClient;
 import net.openan.a2at.sample.shared.env.SampleEnvironmentPathResolver;
@@ -91,8 +92,7 @@ public final class DefaultSampleServerRuntime implements SampleServerRuntime, A2
                     try {
                         Thread.sleep(delaySeconds * 1000L);
                     } catch (InterruptedException exception) {
-                        Thread.currentThread().interrupt();
-                        throw new RuntimeException(exception);
+                        throw new ServerFlowInterruptedException("Sample server sleep was interrupted.");
                     }
                 },
                 buildMockIncidentArtifactData(),

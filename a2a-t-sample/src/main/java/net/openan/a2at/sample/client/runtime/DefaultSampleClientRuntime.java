@@ -169,9 +169,10 @@ public final class DefaultSampleClientRuntime implements SampleClientRuntime, A2
                     return castAgentCard(firstCard);
                 }
                 throw new ValueErrorException("Registry query by name returned no AgentCard entries");
-            } catch (IOException | InterruptedException exception) {
-                Thread.currentThread().interrupt();
+            } catch (IOException exception) {
                 throw new ValueErrorException("Registry query by name failed: " + exception.getMessage());
+            } catch (InterruptedException exception) {
+                throw new ValueErrorException("Registry query by name was interrupted: " + exception.getMessage());
             }
         }
 
@@ -194,8 +195,7 @@ public final class DefaultSampleClientRuntime implements SampleClientRuntime, A2
             } catch (IOException exception) {
                 throw new ValueErrorException("AgentCard query from server root failed: " + exception.getMessage());
             } catch (InterruptedException exception) {
-                Thread.currentThread().interrupt();
-                throw new ValueErrorException("AgentCard query from server root failed: " + exception.getMessage());
+                throw new ValueErrorException("AgentCard query from server root was interrupted: " + exception.getMessage());
             }
         }
     }
