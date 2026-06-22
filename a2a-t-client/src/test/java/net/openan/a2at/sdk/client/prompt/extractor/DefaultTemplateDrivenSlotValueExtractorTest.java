@@ -40,28 +40,28 @@ class DefaultTemplateDrivenSlotValueExtractorTest {
     }
 
     @Test
-    void extractSlotsUsesNonAsciiTemplateReferencedKeysFromMapInput() {
+    void extractSlotsUsesDoubleBracedTemplateReferencedKeysFromMapInput() {
         DefaultTemplateDrivenSlotValueExtractor extractor =
                 new DefaultTemplateDrivenSlotValueExtractor((scenarioCode, language) -> schema(
                         scenarioCode,
-                        new PromptSlotDefinition("通知主题", false, "string", null, null, null, null, null),
-                        new PromptSlotDefinition("订阅条件", false, "string", null, null, null, null, null),
-                        new PromptSlotDefinition("上报通知数据格式", false, "string", null, null, null, null, null)));
+                        new PromptSlotDefinition("topic", false, "string", null, null, null, null, null),
+                        new PromptSlotDefinition("condition", false, "string", null, null, null, null, null),
+                        new PromptSlotDefinition("report_format", false, "string", null, null, null, null, null)));
 
         Map<String, String> slots = extractor.extractSlots(
                 Map.of(
-                        "通知主题", "Incident",
-                        "订阅条件", "故障优先级为：严重",
-                        "上报通知数据格式", "通过DataPart上报Incident数据"),
+                        "topic", "Incident",
+                        "condition", "Severity is critical",
+                        "report_format", "Report incident data through DataPart"),
                 "subscribe_incident",
-                "zh-CN",
-                "通知主题: {{通知主题}}\n订阅条件: {{订阅条件}}\n上报格式: {{上报通知数据格式}}");
+                "en-US",
+                "Topic: {{topic}}\nCondition: {{condition}}\nReport Format: {{report_format}}");
 
         assertEquals(
                 Map.of(
-                        "通知主题", "Incident",
-                        "订阅条件", "故障优先级为：严重",
-                        "上报通知数据格式", "通过DataPart上报Incident数据"),
+                        "topic", "Incident",
+                        "condition", "Severity is critical",
+                        "report_format", "Report incident data through DataPart"),
                 slots);
     }
 

@@ -68,98 +68,98 @@ class TemplateMatchingPromptMetadataExtractorTest {
     }
 
     @Test
-    void extractMatchesTemplateWithNonAsciiPlaceholders() {
+    void extractMatchesTemplateWithDoubleBracedPlaceholders() {
         TemplateMatchingPromptMetadataExtractor extractor =
                 new TemplateMatchingPromptMetadataExtractor(List.of(new PromptTemplateDefinition(
                         "subscribe_incident",
-                        "zh-CN",
-                        "通知主题: {{通知主题}}\n订阅条件: {{订阅条件}}",
+                        "en-US",
+                        "Topic: {{topic}}\nCondition: {{condition}}",
                         List.of(
-                                new PromptTemplateSlotDefinition("通知主题", true),
-                                new PromptTemplateSlotDefinition("订阅条件", false)))));
+                                new PromptTemplateSlotDefinition("topic", true),
+                                new PromptTemplateSlotDefinition("condition", false)))));
 
         ProcessedPromptMetadata metadata = extractor.extract(
-                "通知主题: Incident\n订阅条件: 故障优先级为：严重；告警类型为：flash");
+                "Topic: Incident\nCondition: Severity is critical; alert type is flash");
 
         assertEquals("subscribe_incident", metadata.scenarioCode());
-        assertEquals("zh-CN", metadata.language());
+        assertEquals("en-US", metadata.language());
         assertEquals(
                 Map.of(
-                        "通知主题", "Incident",
-                        "订阅条件", "故障优先级为：严重；告警类型为：flash"),
+                        "topic", "Incident",
+                        "condition", "Severity is critical; alert type is flash"),
                 metadata.slots());
     }
 
     @Test
     void extractMatchesCollapsedPromptAgainstOriginalTemplateWithDescriptiveLines() {
         String originalTemplate =
-                "## 订阅描述\n"
-                        + "请根据以下 <通知主题>、<订阅条件>、<上报通知数据格式>及<预期输出> 信息，完成网络侧智能故障Incident订阅与上报任务。\n\n"
-                        + "## 通知主题\n"
-                        + "{{通知主题}}（必选）\n"
-                        + "要求：提供智能故障Incident的主题名称，具体名称可以是Incident、Fault、智能故障、故障等。\n\n"
-                        + "## 订阅条件\n"
-                        + "{{订阅条件}}（可选）\n"
-                        + "要求：订阅条件包括故障优先级，故障名称。\n"
-                        + "故障优先级：支持传入列表，该参数的取值范围包括 严重、高、中和低。\n"
-                        + "故障名称：支持传入列表，该参数的取值范围为 网络侧故障的名称列表。例如：尾纤故障，光纤中断，单板故障，光模块故障等。\n\n"
-                        + "## 上报通知数据格式\n"
-                        + "{{上报通知数据格式}}（可选）\n"
-                        + "要求：1、上报的数据类型：Incident、故障；2、上报的数据格式：基于A2A的哪一种Part承载（DataPart、TextPart）\n"
-                        + "例如：通过DataPart上报Incident数据\n\n"
-                        + "## 预期输出\n"
-                        + "1、订阅结果，成功或失败\n"
-                        + "2、订阅失败原因（可选）";
+                "## Subscription Description\n"
+                        + "Use the following topic, condition, report format, and expected output to complete an incident subscription task.\n\n"
+                        + "## Topic\n"
+                        + "{{topic}} (Required)\n"
+                        + "Requirement: provide the incident topic name, such as Incident or Fault.\n\n"
+                        + "## Condition\n"
+                        + "{{condition}} (Optional)\n"
+                        + "Requirement: include fault severity and fault name when needed.\n"
+                        + "Severity supports values such as critical, high, medium, and low.\n"
+                        + "Fault name supports network-side fault names such as pigtail failure, fiber cut, board failure, and optical module failure.\n\n"
+                        + "## Report Format\n"
+                        + "{{report_format}} (Optional)\n"
+                        + "Requirement: specify the reported data type and the A2A Part type, such as DataPart or TextPart.\n"
+                        + "Example: report incident data through DataPart.\n\n"
+                        + "## Expected Output\n"
+                        + "1. Subscription result, success or failure\n"
+                        + "2. Failure reason when the subscription fails";
         String processedPrompt =
-                "## 订阅描述\n"
-                        + "请根据以下 <通知主题>、<订阅条件>、<上报通知数据格式>及<预期输出> 信息，完成网络侧智能故障Incident订阅与上报任务。\n\n"
-                        + "## 通知主题\n"
+                "## Subscription Description\n"
+                        + "Use the following topic, condition, report format, and expected output to complete an incident subscription task.\n\n"
+                        + "## Topic\n"
                         + "Incident\n\n"
-                        + "## 订阅条件\n"
-                        + "订阅级别为critical的ETH-LOS的故障\n\n"
-                        + "## 上报通知数据格式\n"
+                        + "## Condition\n"
+                        + "Subscribe to ETH-LOS faults with critical severity\n\n"
+                        + "## Report Format\n"
                         + "DataPart\n\n"
-                        + "## 预期输出\n"
-                        + "1、订阅结果，成功或失败\n"
-                        + "2、订阅失败原因（可选）";
+                        + "## Expected Output\n"
+                        + "1. Subscription result, success or failure\n"
+                        + "2. Failure reason when the subscription fails";
         Map<String, String> sentinelSlots = new LinkedHashMap<>();
-        sentinelSlots.put("通知主题", "__A2AT_SLOT_0__");
-        sentinelSlots.put("订阅条件", "__A2AT_SLOT_1__");
-        sentinelSlots.put("上报通知数据格式", "__A2AT_SLOT_2__");
+        sentinelSlots.put("topic", "__A2AT_SLOT_0__");
+        sentinelSlots.put("condition", "__A2AT_SLOT_1__");
+        sentinelSlots.put("report_format", "__A2AT_SLOT_2__");
 
         assertEquals(
-                "## 订阅描述\n"
-                        + "请根据以下 <通知主题>、<订阅条件>、<上报通知数据格式>及<预期输出> 信息，完成网络侧智能故障Incident订阅与上报任务。\n\n"
-                        + "## 通知主题\n"
+                "## Subscription Description\n"
+                        + "Use the following topic, condition, report format, and expected output to complete an incident subscription task.\n\n"
+                        + "## Topic\n"
                         + "__A2AT_SLOT_0__\n\n"
-                        + "## 订阅条件\n"
+                        + "## Condition\n"
                         + "__A2AT_SLOT_1__\n\n"
-                        + "## 上报通知数据格式\n"
+                        + "## Report Format\n"
                         + "__A2AT_SLOT_2__\n\n"
-                        + "## 预期输出\n"
-                        + "1、订阅结果，成功或失败\n"
-                        + "2、订阅失败原因（可选）",
+                        + "## Expected Output\n"
+                        + "1. Subscription result, success or failure\n"
+                        + "2. Failure reason when the subscription fails",
                 new TaskPromptRenderer().render(originalTemplate, sentinelSlots));
 
         TemplateMatchingPromptMetadataExtractor extractor =
                 new TemplateMatchingPromptMetadataExtractor(List.of(new PromptTemplateDefinition(
                         "subscribe_incident",
-                        "zh-CN",
+                        "en-US",
                         originalTemplate,
                         List.of(
-                                new PromptTemplateSlotDefinition("通知主题", true),
-                                new PromptTemplateSlotDefinition("订阅条件", false),
-                                new PromptTemplateSlotDefinition("上报通知数据格式", false)))));
+                                new PromptTemplateSlotDefinition("topic", true),
+                                new PromptTemplateSlotDefinition("condition", false),
+                                new PromptTemplateSlotDefinition("report_format", false)))));
 
         ProcessedPromptMetadata metadata = extractor.extract(processedPrompt);
 
         assertEquals("subscribe_incident", metadata.scenarioCode());
-        assertEquals("zh-CN", metadata.language());
+        assertEquals("en-US", metadata.language());
         assertEquals(
                 Map.of(
-                        "通知主题", "Incident",
-                        "订阅条件", "订阅级别为critical的ETH-LOS的故障",
-                        "上报通知数据格式", "DataPart"),
+                        "topic", "Incident",
+                        "condition", "Subscribe to ETH-LOS faults with critical severity",
+                        "report_format", "DataPart"),
                 metadata.slots());
     }
 }

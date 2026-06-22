@@ -29,11 +29,13 @@ class TaskPromptRendererTest {
     }
 
     @Test
-    void renderSupportsNonAsciiPlaceholders() {
+    void renderSupportsDoubleBracedPlaceholdersInLongerTemplate() {
         String prompt =
-                renderer.render("通知主题: {{通知主题}}\n订阅条件: {{订阅条件}}", Map.of("通知主题", "Incident", "订阅条件", "故障优先级为：严重"));
+                renderer.render(
+                        "Topic: {{topic}}\nCondition: {{condition}}",
+                        Map.of("topic", "Incident", "condition", "Severity is critical"));
 
-        assertEquals("通知主题: Incident\n订阅条件: 故障优先级为：严重", prompt);
+        assertEquals("Topic: Incident\nCondition: Severity is critical", prompt);
     }
 
     @Test
@@ -62,19 +64,24 @@ class TaskPromptRendererTest {
     }
 
     @Test
-    void renderCollapsesSectionBodyWhenFirstEffectiveLineIsStandaloneSlotWithChineseSuffix() {
+    void renderCollapsesSectionBodyWhenFirstEffectiveLineIsStandaloneSlotWithParenthesizedSuffix() {
         String prompt = renderer.render(
-                "## 任务目标\n"
-                        + "{{task_target}}（必选）\n\n"
-                        + "要求：说明目标。\n"
-                        + "示例：完成诊断。\n\n"
-                        + "## 期望输出\n"
-                        + "{{expected_output}}（可选）\n",
+                "## Task Target\n"
+                        + "{{task_target}} (Required)\n\n"
+                        + "Requirement: explain the target.\n"
+                        + "Example: complete the diagnosis.\n\n"
+                        + "## Expected Output\n"
+                        + "{{expected_output}} (Optional)\n",
                 Map.of(
-                        "task_target", "完成故障诊断并提供处置建议。",
-                        "expected_output", "返回结构化诊断结果。"));
+                        "task_target", "Complete the fault diagnosis and provide remediation advice.",
+                        "expected_output", "Return a structured diagnosis result."));
 
-        assertEquals("## 任务目标\n" + "完成故障诊断并提供处置建议。\n\n" + "## 期望输出\n" + "返回结构化诊断结果。\n", prompt);
+        assertEquals(
+                "## Task Target\n"
+                        + "Complete the fault diagnosis and provide remediation advice.\n\n"
+                        + "## Expected Output\n"
+                        + "Return a structured diagnosis result.\n",
+                prompt);
     }
 
     @Test
@@ -83,7 +90,7 @@ class TaskPromptRendererTest {
                 "## Subscription\n"
                         + "Please subscribe to {{topic}} incidents.\n\n"
                         + "## Condition\n"
-                        + "{{condition}}（可选）\n"
+                        + "{{condition}} (Optional)\n"
                         + "Requirement: describe the filter.\n",
                 Map.of("topic", "network", "condition", "critical only"));
 

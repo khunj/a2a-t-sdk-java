@@ -15,10 +15,10 @@ class DefaultClasspathClientTemplateLoaderTest {
         DefaultClasspathClientTemplateLoader loader =
                 new DefaultClasspathClientTemplateLoader(new ClasspathPromptResourceLoader());
 
-        String templateText = loader.loadTemplate("energy_saving", "zh-CN");
+        String templateText = loader.loadTemplate("energy_saving", "en-US");
 
         assertFalse(templateText.isBlank());
-        assertTrue(templateText.contains("{{任务对象}}"));
+        assertTrue(templateText.contains("{site}"));
     }
 
     @Test
