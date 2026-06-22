@@ -29,6 +29,8 @@ import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.a2aproject.sdk.transport.rest.handler.RestHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Minimal embedded HTTP host that exposes the real a2a-java REST transport endpoints required by the sample.
@@ -36,6 +38,8 @@ import org.a2aproject.sdk.transport.rest.handler.RestHandler;
  * @since 2026-05
  */
 public final class EmbeddedA2AHttpServer implements AutoCloseable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(EmbeddedA2AHttpServer.class);
+
     private final HttpServer server;
 
     private EmbeddedA2AHttpServer(HttpServer server) {
@@ -219,7 +223,7 @@ public final class EmbeddedA2AHttpServer implements AutoCloseable {
             var request = ProtoUtils.FromProto.messageSendParams(builder.build());
             requestHandler.validateRequestedTask(request.message().taskId());
             Flow.Publisher<StreamingEventKind> publisher = requestHandler.onMessageSendStream(request, callContext);
-            System.out.println("[server] stream-publisher-created");
+            LOGGER.debug("[server] stream-publisher-created");
 
             exchange.getResponseHeaders().set("Content-Type", "text/event-stream");
             exchange.sendResponseHeaders(200, 0);
@@ -232,7 +236,7 @@ public final class EmbeddedA2AHttpServer implements AutoCloseable {
                 @Override
                 public void onSubscribe(Flow.Subscription subscription) {
                     this.subscription = subscription;
-                    System.out.println("[server] stream-subscriber-onSubscribe");
+                    LOGGER.debug("[server] stream-subscriber-onSubscribe");
                     subscription.request(1);
                 }
 
@@ -241,14 +245,13 @@ public final class EmbeddedA2AHttpServer implements AutoCloseable {
                     try {
                         String payload = JsonFormat.printer().print(toStreamResponse(item));
                         String encoded = formatSseFrame(sequence.incrementAndGet(), payload);
-                        System.out.println("[server] sse-write: "
-                                + encoded.replace("\r", "\\r").replace("\n", "\\n"));
+                        LOGGER.trace("[server] sse-write: {}", encoded.replace("\r", "\\r").replace("\n", "\\n"));
                         outputStream.write(encoded.getBytes(StandardCharsets.UTF_8));
                         outputStream.flush();
-                        System.out.println("[server] sse-write-flushed");
+                        LOGGER.trace("[server] sse-write-flushed");
                         subscription.request(1);
                     } catch (IOException exception) {
-                        System.out.println("[server] sse-write-failed: " + exception.getMessage());
+                        LOGGER.warn("[server] sse-write-failed", exception);
                         subscription.cancel();
                         completed.countDown();
                     }
@@ -256,14 +259,13 @@ public final class EmbeddedA2AHttpServer implements AutoCloseable {
 
                 @Override
                 public void onError(Throwable throwable) {
-                    System.out.println("[server] stream-subscriber-onError: "
-                            + throwable.getClass().getName() + ": " + throwable.getMessage());
+                    LOGGER.warn("[server] stream-subscriber-onError", throwable);
                     completed.countDown();
                 }
 
                 @Override
                 public void onComplete() {
-                    System.out.println("[server] stream-subscriber-onComplete");
+                    LOGGER.debug("[server] stream-subscriber-onComplete");
                     completed.countDown();
                 }
             });
