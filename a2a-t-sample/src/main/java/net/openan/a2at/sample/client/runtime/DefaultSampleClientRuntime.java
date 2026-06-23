@@ -165,7 +165,9 @@ public final class DefaultSampleClientRuntime implements SampleClientRuntime, A2
                 }
                 Map<String, Object> payload = parseObject(response.body());
                 Object agentCards = payload.get("agentCards");
-                if (agentCards instanceof List<?> cards && !cards.isEmpty() && cards.get(0) instanceof Map<?, ?> firstCard) {
+                if (agentCards instanceof List<?> cards
+                        && !cards.isEmpty()
+                        && cards.get(0) instanceof Map<?, ?> firstCard) {
                     return castAgentCard(firstCard);
                 }
                 throw new ValueErrorException("Registry query by name returned no AgentCard entries");

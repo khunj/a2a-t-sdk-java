@@ -12,8 +12,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Flow;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import org.a2aproject.sdk.grpc.SendMessageRequest;
 import org.a2aproject.sdk.grpc.StreamResponse;
@@ -39,24 +42,33 @@ import org.slf4j.LoggerFactory;
  */
 public final class EmbeddedA2AHttpServer implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmbeddedA2AHttpServer.class);
+    private static final int SERVER_THREAD_COUNT = 8;
 
     private final HttpServer server;
+    private final ExecutorService executorService;
 
-    private EmbeddedA2AHttpServer(HttpServer server) {
+    private EmbeddedA2AHttpServer(HttpServer server, ExecutorService executorService) {
         this.server = server;
+        this.executorService = executorService;
     }
 
     public static EmbeddedA2AHttpServer start(
             String host, int port, AgentCard agentCard, RequestHandler requestHandler) {
         try {
             HttpServer server = HttpServer.create(new InetSocketAddress(host, port), 0);
-            server.setExecutor(Executors.newCachedThreadPool());
+            ExecutorService executorService = new ThreadPoolExecutor(
+                    SERVER_THREAD_COUNT,
+                    SERVER_THREAD_COUNT,
+                    0L,
+                    TimeUnit.MILLISECONDS,
+                    new LinkedBlockingQueue<>());
+            server.setExecutor(executorService);
 
             RestHandler restHandler = new RestHandler(
                     agentCard, new AgentCardCacheMetadata(agentCard, null), requestHandler, Runnable::run);
             server.createContext("/", exchange -> handle(exchange, restHandler));
             server.start();
-            return new EmbeddedA2AHttpServer(server);
+            return new EmbeddedA2AHttpServer(server, executorService);
         } catch (IOException exception) {
             throw new IllegalStateException("Failed to start embedded a2a-java REST server", exception);
         }
@@ -65,6 +77,7 @@ public final class EmbeddedA2AHttpServer implements AutoCloseable {
     @Override
     public void close() {
         server.stop(0);
+        executorService.shutdown();
     }
 
     private static void handle(HttpExchange exchange, RestHandler restHandler) throws IOException {
@@ -205,6 +218,7 @@ public final class EmbeddedA2AHttpServer implements AutoCloseable {
             completed.await();
         } catch (InterruptedException exception) {
             completed.countDown();
+            throw new IOException("Interrupted while waiting for stream response completion", exception);
         } finally {
             outputStream.close();
         }
@@ -274,6 +288,7 @@ public final class EmbeddedA2AHttpServer implements AutoCloseable {
                 completed.await();
             } catch (InterruptedException exception) {
                 completed.countDown();
+                throw new IOException("Interrupted while waiting for message stream completion", exception);
             } finally {
                 outputStream.close();
             }
@@ -284,7 +299,7 @@ public final class EmbeddedA2AHttpServer implements AutoCloseable {
 
     static String formatSseFrame(long sequence, String payload) {
         StringBuilder builder = new StringBuilder();
-        builder.append("id:").append(sequence).append('\n');
+        builder.append(String.format(Locale.ROOT, "id:%d\n", sequence));
         String normalized = payload == null ? "" : payload.replace("\r\n", "\n").replace('\r', '\n');
         String compact = normalized.lines().map(String::trim).reduce("", String::concat);
         builder.append("data:").append(compact).append('\n');

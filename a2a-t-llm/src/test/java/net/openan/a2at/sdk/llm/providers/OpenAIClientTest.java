@@ -14,6 +14,7 @@ import com.openai.models.completions.CompletionUsage;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.concurrent.atomic.AtomicReference;
 import net.openan.a2at.sdk.llm.LLMClientConfig;
 import net.openan.a2at.sdk.llm.LLMConfigError;
@@ -21,7 +22,6 @@ import net.openan.a2at.sdk.llm.LLMResponse;
 import net.openan.a2at.sdk.llm.LLMRuntimeError;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("deprecation")
 class OpenAIClientTest {
 
     @Test
@@ -75,7 +75,7 @@ class OpenAIClientTest {
         ChatCompletionCreateParams params = capturedParams.get();
         assertEquals("gpt-4o-mini", params.model().asString());
         assertEquals(0.25d, params.temperature().orElseThrow());
-        assertEquals(9L, params.maxTokens().orElseThrow());
+        assertEquals(9L, maxTokens(params).orElseThrow());
         assertTrue(params.responseFormat().orElseThrow().isJsonObject());
         assertEquals("json_object", params.responseFormat().orElseThrow().asJsonObject()._type().convert(String.class));
         assertEquals(3, params.messages().size());
@@ -109,7 +109,7 @@ class OpenAIClientTest {
         client.structured(List.of(Map.of("role", "user", "content", "extract")), Map.of("type", "object"), null, null);
 
         assertEquals(0.4d, capturedParams.get().temperature().orElseThrow());
-        assertEquals(128L, capturedParams.get().maxTokens().orElseThrow());
+        assertEquals(128L, maxTokens(capturedParams.get()).orElseThrow());
     }
 
     @Test
@@ -123,7 +123,7 @@ class OpenAIClientTest {
         client.structured(List.of(Map.of("role", "user", "content", "extract")), Map.of("type", "object"), null, null);
 
         assertTrue(capturedParams.get().temperature().isEmpty());
-        assertTrue(capturedParams.get().maxTokens().isEmpty());
+        assertTrue(!maxTokens(capturedParams.get()).isPresent());
     }
 
     @Test
@@ -187,5 +187,11 @@ class OpenAIClientTest {
 
     private static JsonValue jsonString(String value) {
         return JsonValue.fromJsonNode(TextNode.valueOf(value));
+    }
+
+    @SuppressWarnings("deprecation")
+    private static OptionalLong maxTokens(ChatCompletionCreateParams params) {
+        var maxTokens = params.maxTokens();
+        return maxTokens.isPresent() ? OptionalLong.of(maxTokens.orElseThrow()) : OptionalLong.empty();
     }
 }

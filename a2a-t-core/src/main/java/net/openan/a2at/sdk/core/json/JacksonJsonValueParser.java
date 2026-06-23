@@ -1,5 +1,6 @@
 package net.openan.a2at.sdk.core.json;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
@@ -20,7 +21,7 @@ public final class JacksonJsonValueParser implements JsonValueParser {
             Map<String, Object> parsed =
                     OBJECT_MAPPER.readValue(payload, new TypeReference<Map<String, Object>>() {});
             return parsed == null ? Map.of() : parsed;
-        } catch (Exception error) {
+        } catch (JsonProcessingException error) {
             throw new SdkException("Structured JSON payload must be a JSON object.", error);
         }
     }

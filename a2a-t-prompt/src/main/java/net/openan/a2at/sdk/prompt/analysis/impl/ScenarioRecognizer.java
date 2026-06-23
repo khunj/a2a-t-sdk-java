@@ -3,6 +3,7 @@ package net.openan.a2at.sdk.prompt.analysis.impl;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import net.openan.a2at.sdk.core.json.JacksonJsonValueParser;
 import net.openan.a2at.sdk.core.json.JsonValueParser;
@@ -63,17 +64,17 @@ public final class ScenarioRecognizer {
                 .content());
 
         boolean matched = Boolean.TRUE.equals(payload.get("matched"));
-        String scenarioCode = nullableString(payload.get("scenario_code"), "scenario_code");
-        String errorMessage = nullableString(payload.get("error_message"), "error_message");
+        Optional<String> scenarioCode = optionalString(payload.get("scenario_code"), "scenario_code");
+        Optional<String> errorMessage = optionalString(payload.get("error_message"), "error_message");
 
-        if (matched && (scenarioCode == null || scenarioCode.isBlank())) {
+        if (matched && (!scenarioCode.isPresent() || scenarioCode.orElseThrow().isBlank())) {
             throw new ScenarioRecognitionException("Matched scenario recognition result must include scenario_code.");
         }
-        if (!matched && scenarioCode != null) {
+        if (!matched && scenarioCode.isPresent()) {
             throw new ScenarioRecognitionException(
                     "Unmatched scenario recognition result must not include scenario_code.");
         }
-        return new ScenarioRecognitionResult(matched, scenarioCode, errorMessage);
+        return new ScenarioRecognitionResult(matched, scenarioCode.orElse(null), errorMessage.orElse(null));
     }
 
     private static List<PromptMessage> buildMessages(
@@ -103,12 +104,12 @@ public final class ScenarioRecognizer {
                 .toList();
     }
 
-    private static String nullableString(Object value, String fieldName) {
+    private static Optional<String> optionalString(Object value, String fieldName) {
         if (value == null) {
-            return null;
+            return Optional.empty();
         }
         if (value instanceof String text) {
-            return text;
+            return Optional.of(text);
         }
         throw new ScenarioRecognitionException("Scenario recognition field must be a string: " + fieldName);
     }

@@ -2,6 +2,9 @@ package net.openan.a2at.sdk.llm;
 
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 import net.openan.a2at.sdk.core.model.DotEnvConfigSource;
 
 /**
@@ -52,68 +55,70 @@ public final class LLMConfigLoader {
                             + "A2AT_LLM_SESSION_MAX_PER_PROVIDER");
         }
 
+        OptionalInt maxTokens = parseOptionalInt(values.get("A2AT_LLM_MAX_TOKENS"), "A2AT_LLM_MAX_TOKENS");
+        OptionalDouble temperature = parseOptionalDouble(values.get("A2AT_LLM_TEMPERATURE"), "A2AT_LLM_TEMPERATURE");
+        OptionalDouble timeoutSeconds =
+                parseOptionalDouble(values.get("A2AT_LLM_TIMEOUT_SECONDS"), "A2AT_LLM_TIMEOUT_SECONDS");
+
         return new LLMClientConfig(
                 provider,
                 model,
                 apiKey,
-                optional(values.get("A2AT_LLM_BASE_URL")),
+                optional(values.get("A2AT_LLM_BASE_URL")).orElse(null),
                 historyWindow,
-                parseOptionalInt(values.get("A2AT_LLM_MAX_TOKENS"), "A2AT_LLM_MAX_TOKENS"),
-                parseOptionalDouble(values.get("A2AT_LLM_TEMPERATURE"), "A2AT_LLM_TEMPERATURE"),
-                parseOptionalDouble(values.get("A2AT_LLM_TIMEOUT_SECONDS"), "A2AT_LLM_TIMEOUT_SECONDS"),
+                maxTokens.isPresent() ? maxTokens.getAsInt() : null,
+                temperature.isPresent() ? temperature.getAsDouble() : null,
+                timeoutSeconds.isPresent() ? timeoutSeconds.getAsDouble() : null,
                 sessionMaxTotal,
                 sessionMaxPerProvider);
     }
 
     private static String required(Map<String, String> values, String key) {
-        String value = optional(values.get(key));
-        if (value == null) {
-            throw new LLMConfigError(
-                    "A2AT_LLM_PROVIDER, A2AT_LLM_MODEL, and A2AT_LLM_API_KEY must be set in the .env file");
-        }
-        return value;
+        return optional(values.get(key))
+                .orElseThrow(() -> new LLMConfigError(
+                        "A2AT_LLM_PROVIDER, A2AT_LLM_MODEL, and A2AT_LLM_API_KEY must be set in the .env file"));
     }
 
-    private static String optional(String value) {
+    private static Optional<String> optional(String value) {
         if (value == null) {
-            return null;
+            return Optional.empty();
         }
         String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
+        return trimmed.isEmpty() ? Optional.empty() : Optional.of(trimmed);
     }
 
-    private static Integer parseOptionalInt(String rawValue, String key) {
-        String value = optional(rawValue);
-        if (value == null) {
-            return null;
+    private static OptionalInt parseOptionalInt(String rawValue, String key) {
+        Optional<String> value = optional(rawValue);
+        if (!value.isPresent()) {
+            return OptionalInt.empty();
         }
         try {
-            return Integer.parseInt(value);
+            return OptionalInt.of(Integer.parseInt(value.orElseThrow()));
         } catch (NumberFormatException exception) {
             throw new LLMConfigError(key + " must be an integer", exception);
         }
     }
 
-    private static Double parseOptionalDouble(String rawValue, String key) {
-        String value = optional(rawValue);
-        if (value == null) {
-            return null;
+    private static OptionalDouble parseOptionalDouble(String rawValue, String key) {
+        Optional<String> value = optional(rawValue);
+        if (!value.isPresent()) {
+            return OptionalDouble.empty();
         }
         try {
-            return Double.parseDouble(value);
+            return OptionalDouble.of(Double.parseDouble(value.orElseThrow()));
         } catch (NumberFormatException exception) {
             throw new LLMConfigError(key + " must be a float", exception);
         }
     }
 
     private static int parseBoundedInt(String rawValue, String key, int defaultValue, int maxValue) {
-        String value = optional(rawValue);
-        if (value == null) {
+        Optional<String> value = optional(rawValue);
+        if (!value.isPresent()) {
             return defaultValue;
         }
         int parsed;
         try {
-            parsed = Integer.parseInt(value);
+            parsed = Integer.parseInt(value.orElseThrow());
         } catch (NumberFormatException exception) {
             throw new LLMConfigError(key + " must be an integer", exception);
         }

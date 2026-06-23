@@ -3,7 +3,13 @@ package net.openan.a2at.sample.server.runtime;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import net.openan.a2at.sample.server.agentcard.ServerSampleAgentCardBuilder;
 import net.openan.a2at.sample.server.flow.PromptComplianceChecker;
@@ -33,12 +39,13 @@ import org.a2aproject.sdk.server.tasks.PushNotificationSender;
  */
 public final class DefaultSampleServerRuntime implements SampleServerRuntime, A2AJavaServerRuntime {
     private static final String SAMPLE_THREAD_NAME = "a2a-t-sample-server";
+    private static final int SAMPLE_THREAD_COUNT = 4;
 
     private final Path envPath;
 
     private final Consumer<String> logSink;
 
-    private final Executor sampleExecutor;
+    private final ExecutorService sampleExecutor;
 
     public DefaultSampleServerRuntime(Path envPath) {
         this(envPath, System.out::println);
@@ -47,10 +54,13 @@ public final class DefaultSampleServerRuntime implements SampleServerRuntime, A2
     public DefaultSampleServerRuntime(Path envPath, Consumer<String> logSink) {
         this.envPath = envPath;
         this.logSink = logSink;
-        this.sampleExecutor = command -> {
-            Thread thread = createSampleThread(command, this.logSink);
-            thread.start();
-        };
+        this.sampleExecutor = new ThreadPoolExecutor(
+                SAMPLE_THREAD_COUNT,
+                SAMPLE_THREAD_COUNT,
+                0L,
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(),
+                createSampleThreadFactory(this.logSink));
     }
 
     @Override
@@ -182,20 +192,24 @@ public final class DefaultSampleServerRuntime implements SampleServerRuntime, A2
                         Map.entry("rootEventCsns", List.of(Map.of("csn", "524261", "type", "0")))));
     }
 
-    static Thread createSampleThread(Runnable command, Consumer<String> logSink) {
-        Thread thread = new Thread(command, SAMPLE_THREAD_NAME);
-        thread.setDaemon(true);
-        thread.setUncaughtExceptionHandler((failedThread, throwable) -> {
-            if (logSink != null) {
-                logSink.accept("[server] sample-executor-uncaught-exception: "
-                        + failedThread.getName()
-                        + ": "
-                        + throwable.getClass().getName()
-                        + ": "
-                        + throwable.getMessage());
-            }
-        });
-        return thread;
+    static ThreadFactory createSampleThreadFactory(Consumer<String> logSink) {
+        AtomicLong sequence = new AtomicLong(0L);
+        return command -> {
+            Thread thread = Executors.defaultThreadFactory().newThread(command);
+            thread.setName(SAMPLE_THREAD_NAME + "-" + sequence.incrementAndGet());
+            thread.setDaemon(true);
+            thread.setUncaughtExceptionHandler((failedThread, throwable) -> {
+                if (logSink != null) {
+                    logSink.accept("[server] sample-executor-uncaught-exception: "
+                            + failedThread.getName()
+                            + ": "
+                            + throwable.getClass().getName()
+                            + ": "
+                            + throwable.getMessage());
+                }
+            });
+            return thread;
+        };
     }
 
     private void startMainEventBusProcessor(MainEventBusProcessor mainEventBusProcessor) {
@@ -207,7 +221,7 @@ public final class DefaultSampleServerRuntime implements SampleServerRuntime, A2
                 logSink.accept("[server] event-bus-processor: started");
             }
         } catch (ReflectiveOperationException exception) {
-            throw new IllegalStateException("Failed to start MainEventBusProcessor", exception);
+            throw new ValueErrorException("Failed to start MainEventBusProcessor", exception);
         }
     }
 
