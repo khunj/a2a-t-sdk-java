@@ -1,10 +1,12 @@
 package net.openan.a2at.sdk.server.validation;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import net.openan.a2at.sdk.core.model.PromptMessage;
 import net.openan.a2at.sdk.llm.LLMClient;
 import net.openan.a2at.sdk.prompt.resources.loader.PromptSlotSchemaLoader;
@@ -70,7 +72,7 @@ public final class LlmBackedPromptSemanticValidator implements ServerPromptSeman
                     + "  \"extracted_slots\": "
                     + OBJECT_MAPPER.writeValueAsString(extractedSlots)
                     + "\n}";
-        } catch (Exception error) {
+        } catch (JsonProcessingException error) {
             throw new PromptComplianceCheckException(
                     "slot_validation_error", "Failed to serialize slot schema", "slot_validation");
         }
@@ -114,10 +116,10 @@ public final class LlmBackedPromptSemanticValidator implements ServerPromptSeman
             return;
         }
 
-        String message = extractFirstMessage(errorsValue);
+        Optional<String> message = extractFirstMessage(errorsValue);
         throw new PromptComplianceCheckException(
                 "slot_validation_error",
-                message == null || message.isBlank() ? "Slot semantic validation failed." : message,
+                message.filter(text -> !text.isBlank()).orElse("Slot semantic validation failed."),
                 "slot_validation");
     }
 
@@ -125,22 +127,22 @@ public final class LlmBackedPromptSemanticValidator implements ServerPromptSeman
         try {
             Map<String, Object> response =
                     OBJECT_MAPPER.readValue(payload, new TypeReference<Map<String, Object>>() {});
-            return response == null ? Map.of() : response;
-        } catch (Exception error) {
+            return Optional.ofNullable(response).orElseGet(Map::of);
+        } catch (JsonProcessingException error) {
             throw new PromptComplianceCheckException(
                     "slot_validation_error", "semantic validation returned invalid JSON", "slot_validation");
         }
     }
 
-    private static String extractFirstMessage(Object errorsValue) {
+    private static Optional<String> extractFirstMessage(Object errorsValue) {
         if (!(errorsValue instanceof List<?> errors) || errors.isEmpty()) {
-            return null;
+            return Optional.empty();
         }
         Object firstError = errors.get(0);
         if (!(firstError instanceof Map<?, ?> errorMap)) {
-            return null;
+            return Optional.empty();
         }
         Object message = errorMap.get("message");
-        return message instanceof String text ? text : null;
+        return message instanceof String text ? Optional.of(text) : Optional.empty();
     }
 }

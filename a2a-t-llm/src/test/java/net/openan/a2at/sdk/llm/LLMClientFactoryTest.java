@@ -1,6 +1,5 @@
 package net.openan.a2at.sdk.llm;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -32,7 +31,8 @@ class LLMClientFactoryTest {
         LLMClient client = LLMClientFactory.create("openai_compatible", config);
 
         assertInstanceOf(OpenAIClient.class, client);
-        LLMConfigError error = assertThrows(LLMConfigError.class, () -> client.structured(List.of(), Map.of(), null, null));
+        LLMConfigError error =
+                assertThrows(LLMConfigError.class, () -> client.structured(List.of(), Map.of(), null, null));
         assertTrue(error.getMessage().contains("openai_compatible"));
     }
 
@@ -43,8 +43,8 @@ class LLMClientFactoryTest {
         LLMClientFactory.register("customphasefour", CustomClient.class);
         LLMClient client = LLMClientFactory.create("customphasefour", config);
 
-        assertInstanceOf(CustomClient.class, client);
-        assertSame(config, ((CustomClient) client).config());
+        CustomClient customClient = assertInstanceOf(CustomClient.class, client);
+        assertSame(config, customClient.config());
         assertTrue(LLMClientFactory.availableProviders().contains("customphasefour"));
     }
 
@@ -73,8 +73,9 @@ class LLMClientFactoryTest {
 
     @Test
     void rejectsUnknownProviderOnCreate() {
-        LLMConfigError error =
-                assertThrows(LLMConfigError.class, () -> LLMClientFactory.create("missingphasefour", buildConfig("missingphasefour")));
+        LLMConfigError error = assertThrows(
+                LLMConfigError.class,
+                () -> LLMClientFactory.create("missingphasefour", buildConfig("missingphasefour")));
 
         assertTrue(error.getMessage().contains("missingphasefour"));
         assertTrue(error.getMessage().contains("openai"));

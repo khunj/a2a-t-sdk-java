@@ -27,7 +27,6 @@ import net.openan.a2at.sdk.llm.LLMRuntimeError;
  *
  * @since 2026-06
  */
-@SuppressWarnings("deprecation")
 public class OpenAIClient implements LLMClient {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -41,6 +40,7 @@ public class OpenAIClient implements LLMClient {
 
     private final BiFunction<LLMClientConfig, ChatCompletionCreateParams, ChatCompletion> executor;
 
+    @SuppressWarnings("deprecation")
     private com.openai.client.OpenAIClient sdkClient;
 
     public OpenAIClient(LLMClientConfig config) {
@@ -72,6 +72,7 @@ public class OpenAIClient implements LLMClient {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private ChatCompletionCreateParams buildStructuredParams(
             List<Map<String, String>> messages, Map<String, Object> jsonSchema, Double temperature, Integer maxTokens) {
         ChatCompletionCreateParams.Builder builder = ChatCompletionCreateParams.builder()
@@ -137,7 +138,7 @@ public class OpenAIClient implements LLMClient {
             return rawContent;
         } catch (LLMRuntimeError error) {
             throw error;
-        } catch (Exception error) {
+        } catch (JsonProcessingException error) {
             throw new LLMRuntimeError(config.provider() + " returned invalid json: " + error.getMessage(), error);
         }
     }
@@ -170,10 +171,12 @@ public class OpenAIClient implements LLMClient {
         return metadata;
     }
 
+    @SuppressWarnings("deprecation")
     private ChatCompletion executeWithSdk(LLMClientConfig runtimeConfig, ChatCompletionCreateParams params) {
         return sdkClient(runtimeConfig).chat().completions().create(params);
     }
 
+    @SuppressWarnings("deprecation")
     private com.openai.client.OpenAIClient sdkClient(LLMClientConfig runtimeConfig) {
         if (sdkClient != null) {
             return sdkClient;

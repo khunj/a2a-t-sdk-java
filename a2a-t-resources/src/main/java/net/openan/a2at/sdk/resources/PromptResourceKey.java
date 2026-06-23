@@ -1,6 +1,5 @@
 package net.openan.a2at.sdk.resources;
 
-import java.io.File;
 
 /**
  * Identifies one resource bundled with the SDK prompt resource tree.

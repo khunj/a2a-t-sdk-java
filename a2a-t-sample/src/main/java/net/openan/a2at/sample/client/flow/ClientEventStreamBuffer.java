@@ -61,7 +61,10 @@ public final class ClientEventStreamBuffer implements Iterable<ClientEvent> {
                 if (resolved instanceof Throwable throwable) {
                     throw new ValueErrorException("A2A message:stream request failed: " + throwable.getMessage());
                 }
-                return (ClientEvent) resolved;
+                if (resolved instanceof ClientEvent event) {
+                    return event;
+                }
+                throw new ValueErrorException("A2A message:stream returned an unexpected event type.");
             }
 
             private Object takeNextItem() {
@@ -72,7 +75,6 @@ public final class ClientEventStreamBuffer implements Iterable<ClientEvent> {
                     }
                     return item;
                 } catch (InterruptedException exception) {
-                    Thread.currentThread().interrupt();
                     finished = true;
                     return END;
                 }
@@ -80,5 +82,3 @@ public final class ClientEventStreamBuffer implements Iterable<ClientEvent> {
         };
     }
 }
-
-

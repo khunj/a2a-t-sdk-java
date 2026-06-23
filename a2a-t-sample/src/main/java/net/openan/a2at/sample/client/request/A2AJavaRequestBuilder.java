@@ -1,6 +1,5 @@
 package net.openan.a2at.sample.client.request;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;

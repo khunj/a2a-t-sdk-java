@@ -1,11 +1,11 @@
 package net.openan.a2at.sdk.negotiation.handler;
 
+import net.openan.a2at.sdk.negotiation.types.checker.TaskPromptComplianceChecker;
 import net.openan.a2at.sdk.negotiation.types.model.NegotiationContext;
 import net.openan.a2at.sdk.negotiation.types.model.NegotiationContinueResult;
 import net.openan.a2at.sdk.negotiation.types.model.NegotiationReceiveResult;
 import net.openan.a2at.sdk.negotiation.types.model.NegotiationStatus;
 import net.openan.a2at.sdk.negotiation.types.model.TaskPromptComplianceResult;
-import net.openan.a2at.sdk.negotiation.types.checker.TaskPromptComplianceChecker;
 
 import java.util.Map;
 
@@ -20,7 +20,7 @@ public final class InformationNegotiation implements Negotiation {
 
     /** Creates an information negotiation type without prompt-compliance checks. */
     public InformationNegotiation() {
-        this.complianceChecker = null;
+        this(null);
     }
 
     /**

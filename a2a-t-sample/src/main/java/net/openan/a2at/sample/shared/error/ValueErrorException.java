@@ -10,6 +10,8 @@ public final class ValueErrorException extends RuntimeException {
     public ValueErrorException(String message) {
         super(message);
     }
+
+    public ValueErrorException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
-
-
