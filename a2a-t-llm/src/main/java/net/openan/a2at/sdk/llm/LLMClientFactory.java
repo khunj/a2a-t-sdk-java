@@ -18,7 +18,6 @@ public final class LLMClientFactory {
 
     static {
         CLIENTS.put("openai", OpenAIClient.class);
-        CLIENTS.put("openai_compatible", OpenAIClient.class);
     }
 
     private LLMClientFactory() {}
